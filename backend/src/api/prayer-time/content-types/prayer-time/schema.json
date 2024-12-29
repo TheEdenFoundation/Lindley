@@ -1,0 +1,85 @@
+{
+  "kind": "collectionType",
+  "collectionName": "prayer_times",
+  "info": {
+    "singularName": "prayer-time",
+    "pluralName": "prayer-times",
+    "displayName": "Prayer Times",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "islamic_date": {
+      "type": "integer",
+      "required": true
+    },
+    "islamic_month": {
+      "type": "string",
+      "required": true
+    },
+    "islamic_year": {
+      "type": "integer"
+    },
+    "sehri_end": {
+      "type": "time",
+      "required": false
+    },
+    "fajr_start": {
+      "type": "time",
+      "required": true
+    },
+    "fajr_jamat": {
+      "type": "time",
+      "required": true
+    },
+    "sunrise": {
+      "type": "time",
+      "required": true
+    },
+    "zohar_start": {
+      "type": "time",
+      "required": true
+    },
+    "zohar_jamat": {
+      "type": "time",
+      "required": true
+    },
+    "asr_start": {
+      "type": "time",
+      "required": true
+    },
+    "asr_jamat": {
+      "type": "time",
+      "required": true
+    },
+    "maghrib_start": {
+      "type": "time",
+      "required": true
+    },
+    "maghrib_jamat": {
+      "type": "time",
+      "required": true
+    },
+    "isha_start": {
+      "type": "time",
+      "required": true
+    },
+    "isha_jamat": {
+      "type": "time",
+      "required": true
+    },
+    "jummah_1": {
+      "type": "time"
+    },
+    "jummah_2": {
+      "type": "time"
+    }
+  }
+}

@@ -65,39 +65,50 @@ onMounted(fetchSlideshow);
 
 <style lang="scss" scoped>
 .news-container {
-  display: flex;
-  width: 60%;
-  height: auto;
-  align-items: center;
-}
+  height: 100%;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
 
-.news-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  text-align: center;
-  gap: 1rem;
-
-  figure {
-    margin: 0;
+  .swiper {
+    height: 100%;
   }
 
-  img {
-    max-width: 100%;
-    height: auto;
+  .news-item {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    figure {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+    }
   }
 
-  h3 {
-    margin-top: 1rem;
-    font-size: 3rem;
+  @media (max-width: 1024px) {
+    aspect-ratio: 16/9;
+    height: 100%;
+
+    .news-item figure img {
+      object-fit: cover;
+    }
   }
 
-  p {
-    max-width: 75%;
-    margin-top: 0.5rem;
-    font-size: 2.1rem;
-    padding: 0 3rem;
+  @media (max-width: 768px) {
+    min-height: 400px;
+
+    .news-item {
+      padding: 16px 0;
+    }
   }
 }
 

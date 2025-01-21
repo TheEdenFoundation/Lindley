@@ -123,59 +123,39 @@ onMounted(() => {
 
 <template>
   <div class="timetable-container">
-    <table v-if="formattedTimes.length">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Start Time</th>
-          <th>Jamat Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
+    <div v-if="formattedTimes.length" class="timetable">
+      <div class="timetable__header">
+        <span class="name-column"></span>
+        <span class="time-column">Start Time</span>
+        <span class="time-column">Jamat Time</span>
+      </div>
+      <ul class="timetable__list">
+        <li
           v-for="time in formattedTimes"
           :key="time.id"
           :class="{
             jummah: time.Name === 'Jummah Khutbah',
           }"
         >
-          <td class="name">{{ time.Name }}</td>
-          <td
-            v-if="time['Start Time'] && !time['Jamat Time']"
-            class="jamat"
-            colspan="2"
-          >
-            {{ time["Start Time"] }}
-          </td>
-          <td
-            v-else-if="time['Start Time'] === time['Jamat Time']"
-            class="jamat"
-            colspan="2"
-          >
-            {{ time["Jamat Time"] }}
-          </td>
-          <td
-            v-else-if="time['Start Time'] !== time['Jamat Time']"
-            class="start"
-            :class="time.Name === 'Jummah Khutbah' ? 'jummah' : ''"
-          >
-            {{ time["Start Time"] }}
-          </td>
-          <td
-            v-if="time['Start Time'] !== time['Jamat Time']"
-            class="jamat"
-            :class="time.Name === 'Jummah Khutbah' ? 'jummah' : ''"
-          >
-            {{ time["Jamat Time"] }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <span class="name-column">{{ time.Name.split(" ")[0] }}</span>
+          <template v-if="time['Start Time'] && !time['Jamat Time']">
+            <span class="time-column full-width">{{ time["Start Time"] }}</span>
+          </template>
+          <template v-else-if="time['Start Time'] === time['Jamat Time']">
+            <span class="time-column full-width">{{ time["Jamat Time"] }}</span>
+          </template>
+          <template v-else>
+            <span class="time-column">{{ time["Start Time"] }}</span>
+            <span class="time-column">{{ time["Jamat Time"] }}</span>
+          </template>
+        </li>
+      </ul>
+    </div>
     <div v-else class="skeleton-table">
       <div class="skeleton-row" v-for="i in 5" :key="i">
         <div class="skeleton-cell skeleton-name"></div>
-        <div class="skeleton-cell skeleton-start-time"></div>
-        <div class="skeleton-cell skeleton-jamat-time"></div>
+        <div class="skeleton-cell skeleton-time"></div>
+        <div class="skeleton-cell skeleton-time"></div>
       </div>
     </div>
   </div>
@@ -183,39 +163,77 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .timetable-container {
+  height: 100%;
+  padding: 16px;
   display: flex;
-  width: 40%;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
-  table {
+  .timetable {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: auto;
-    border-collapse: collapse;
-    background: #2d9159;
-    color: white;
+    height: 100%;
 
-    thead {
-      tr {
-        th {
-          font-size: 1.8rem;
-          padding-top: 2rem;
-        }
+    &__header {
+      display: flex;
+      padding: 12px 16px;
+      color: #666;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+
+      .name-column {
+        width: 40%;
+        text-align: left;
+      }
+
+      .time-column {
+        flex: 1;
+        text-align: center;
       }
     }
 
-    tbody {
-      tr {
-        td {
-          font-size: 2.7rem;
-          text-align: center;
-        }
+    &__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+
+      li {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px 16px;
+        font-size: 1.6rem;
+        transition: background-color 0.2s ease;
 
         &.jummah {
-          background-color: #ffad1f; /* Change the color as desired */
+          background: #fff3cd;
+          color: #856404;
         }
 
-        .jamat-only {
+        .name-column {
+          width: 40%;
+          font-weight: 600;
+          color: #2d3748;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .time-column {
+          flex: 1;
           text-align: center;
+          color: #4a5568;
+          font-weight: 700;
+
+          &.full-width {
+            flex: 2;
+          }
         }
       }
     }
@@ -223,28 +241,44 @@ onMounted(() => {
 
   .skeleton-table {
     width: 100%;
-    height: auto;
-    background-color: #f0f0f0;
-    animation: skeleton-loading 1.5s infinite;
-    margin: 2rem;
-  }
-}
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
-.name,
-.jamat,
-.jummah {
-  font-weight: bold;
-}
+    .skeleton-row {
+      display: flex;
+      gap: 8px;
+      flex: 1;
 
-@keyframes skeleton-loading {
-  0% {
-    background-color: #f0f0f0;
+      .skeleton-cell {
+        background: #f0f0f0;
+        height: 48px;
+        border-radius: 8px;
+        animation: skeleton-loading 1.5s infinite;
+
+        &.skeleton-name {
+          width: 40%;
+        }
+
+        &.skeleton-time {
+          width: 30%;
+        }
+      }
+    }
   }
-  50% {
-    background-color: #e0e0e0;
-  }
-  100% {
-    background-color: #f0f0f0;
+
+  @media (max-width: 1024px) {
+    .timetable {
+      &__header {
+        font-size: 1.1rem;
+        padding: 8px;
+      }
+
+      &__list li {
+        font-size: 1.4rem;
+        padding: 16px;
+      }
+    }
   }
 }
 </style>

@@ -40,26 +40,20 @@ onMounted(async () => {
 
 <template>
   <header>
-    <div class="logo-container">
-      <img
-        src="../assets/logo.svg"
-        alt="Madni Jamia Masjid Logo"
-        class="logo"
-      />
-      <span>Madni Jamia Masjid</span>
-    </div>
-    <div class="date-time-container" v-if="date && hijri">
-      <span class="date-time-container__time">{{ currentTime }}</span>
-      <div class="date-time-container__date">
-        <span>{{ date }}</span>
-        <span>{{ hijri }}</span>
+    <div class="header-row">
+      <div class="header-section logo-container">
+        <img
+          src="../assets/logo.svg"
+          alt="Madni Jamia Masjid Logo"
+          class="logo"
+        />
+        <span>Madni Jamia Masjid</span>
       </div>
-    </div>
-    <div v-else class="skeleton-date-time">
-      <div class="skeleton-time"></div>
-      <div class="skeleton-date">
-        <div class="skeleton-date-item"></div>
-        <div class="skeleton-date-item"></div>
+      <div class="header-section date-container" v-if="date && hijri">
+        <span>{{ date }} | {{ hijri }}</span>
+      </div>
+      <div class="header-section time-container" v-if="date && hijri">
+        <span class="time">{{ currentTime }}</span>
       </div>
     </div>
   </header>
@@ -67,98 +61,130 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  height: 150px; /* Set the header height to 10% of the viewport height */
-  width: 100%;
-  background-color: #faf0e6;
+  padding: 0 24px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-  .date-time-container {
+  .header-row {
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    width: 60%;
-    text-align: center;
-    gap: 1rem;
-    height: 100%; /* Make the date-time container fill the header height */
-    border-left: solid 1px black;
+    height: 100%;
+  }
 
-    span {
-      display: block;
-      color: black;
-      margin: 0;
-      padding: 0 2rem;
-    }
-
-    &__date {
-      display: flex;
-      flex-direction: column;
-      font-size: 2.3rem;
-      font-weight: bold;
-      align-items: flex-end;
-    }
-
-    &__time {
-      font-size: 4rem;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
+  .header-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 16px;
   }
 
   .logo-container {
-    display: flex;
-    width: 40%;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    height: 100%;
+    justify-content: flex-start;
+    gap: 16px;
 
     img {
-      width: 100%;
-      max-width: 120px;
-      height: auto;
+      height: 50px;
+      width: auto;
     }
 
     span {
-      font-size: 2rem;
-      font-weight: bold;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #2d3748;
     }
   }
 
-  .skeleton-date-time {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 60%;
-    padding: 0 2rem;
-    text-align: center;
-    gap: 1rem;
-    height: 100%;
-    border-left: solid 1px black;
+  .date-container {
+    justify-content: center;
 
-    .skeleton-time {
-      width: 50%;
-      height: 4rem;
-      background-color: #f0f0f0;
-      animation: skeleton-loading 1.5s infinite;
+    span {
+      font-size: 1.4rem;
+      color: #4a5568;
+      font-weight: 700;
+    }
+  }
+
+  .time-container {
+    justify-content: flex-end;
+
+    .time {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2d3748;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    height: 70px;
+    padding: 0 12px;
+
+    .header-section {
+      padding: 0 8px;
     }
 
-    .skeleton-date {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      width: 50%;
-      gap: 1rem;
+    .logo-container {
+      img {
+        height: 40px;
+      }
 
-      .skeleton-date-item {
-        width: 80%;
-        height: 2.3rem;
-        background-color: #f0f0f0;
-        animation: skeleton-loading 1.5s infinite;
+      span {
+        font-size: 1.2rem;
+      }
+    }
+
+    .date-container span {
+      font-size: 1.1rem;
+    }
+
+    .time-container .time {
+      font-size: 2.2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    height: auto;
+    padding: 12px;
+
+    .header-row {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header-section {
+      padding: 0;
+    }
+
+    .logo-container {
+      order: 1;
+      justify-content: center;
+      gap: 12px;
+
+      img {
+        height: 36px;
+      }
+
+      span {
+        font-size: 1.2rem;
+      }
+    }
+
+    .date-container {
+      order: 1;
+      justify-content: center;
+
+      span {
+        font-size: 1rem;
+      }
+    }
+
+    .time-container {
+      order: 2;
+      justify-content: center;
+
+      .time {
+        font-size: 2.4rem;
       }
     }
   }

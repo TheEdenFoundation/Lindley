@@ -2,14 +2,18 @@
 import TimeTable from "./components/TimeTable.vue";
 import Date from "./components/Date.vue";
 import News from "./components/News.vue";
+import NextPrayer from "./components/NextPrayer.vue";
 </script>
 
 <template>
   <div class="tv-display">
     <Date class="date-component" />
     <div class="tv-display__body">
-      <TimeTable class="timetable-component" />
-      <News class="news-component" />
+      <div class="tv-display__main">
+        <TimeTable class="timetable-component" />
+        <News class="news-component" />
+      </div>
+      <NextPrayer class="next-prayer-component" />
     </div>
   </div>
 </template>
@@ -21,12 +25,17 @@ import News from "./components/News.vue";
   box-sizing: border-box;
 }
 
+/* 
+   1) Large screens: no scroll, hidden overflow.
+   2) Mobile/tablet (<= 1024px): auto scroll.
+*/
 body {
   font-family: "Segoe UI", sans-serif;
   background: #f5f5f5;
-  overflow: hidden;
+  overflow: hidden; /* Large screens: no scroll by default */
 
   @media (max-width: 1024px) {
+    /* On mobile/tablet, allow body to scroll if needed */
     overflow: auto;
   }
 }
@@ -50,9 +59,21 @@ body {
 
   &__body {
     display: flex;
-    gap: 24px;
+    flex-direction: column;
+    gap: 16px;
     padding: 24px;
     height: calc(100vh - 6rem);
+    overflow: auto; /* Allow internal scrolling in each section */
+
+    /* No overflow here, large screens won't scroll. Body does on mobile if needed. */
+  }
+
+  &__main {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden; /* No scroll in main for large screens */
 
     .timetable-component,
     .news-component {
@@ -60,8 +81,14 @@ body {
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       padding: 24px;
-      overflow: hidden;
-      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* For large screens, hidden */
+
+      /* On mobile/tablet, each section is full screen (100vh) and scrollable */
+      @media (max-width: 1024px) {
+        min-height: 90%; /* Fill entire viewport on mobile */
+      }
     }
 
     .timetable-component {
@@ -70,54 +97,46 @@ body {
 
     .news-component {
       flex: 6;
+      display: block; /* or flex, your choice */
     }
 
     @media (max-width: 1024px) {
       flex-direction: column;
       height: auto;
-      min-height: calc(100vh - 180px);
-
-      .timetable-component {
-        height: auto;
-        min-height: 400px;
-      }
-
-      .news-component {
-        height: auto;
-        min-height: 600px;
-      }
     }
+  }
 
-    @media (max-width: 768px) {
+  .next-prayer-component {
+    flex-shrink: 0;
+    height: auto;
+  }
+
+  @media (max-width: 768px) {
+    &__body {
       padding: 16px;
       gap: 16px;
+      /* body can still scroll if overall content is bigger than 100vh */
+    }
 
-      .timetable-component {
-        min-height: 350px;
-      }
-
-      .news-component {
-        min-height: 500px;
-      }
+    &__main {
+      flex-direction: column;
+      gap: 16px;
     }
   }
 }
 
-// Scrollbar styling
+/* Scrollbar styling (seen on mobile/tablet because overflow=auto there) */
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }

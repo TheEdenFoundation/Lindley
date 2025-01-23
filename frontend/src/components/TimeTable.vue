@@ -1,177 +1,170 @@
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { ref, onMounted } from "vue";
 
-const times = ref([]);
-const currentTime = ref(new Date());
+/** Reactive state **/
+const weekData = ref([]);
+const finalArray = ref([]);
 
-async function fetchTimetable() {
-  try {
-    const response = await fetch(import.meta.env.VITE_GOOGLE_TIMETABLE_API_URL);
-    if (!response.ok) throw new Error("Failed to fetch data");
-    const data = await response.json();
+/** Calculate Sunday → Saturday (YYYY-MM-DD) */
+function getWeekRange() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon,...,6=Sat
 
-    const filteredData = data.data.filter((entry) =>
-      [
-        "Fajr today",
-        "Fajr tomorrow",
-        "Sunrise today",
-        "Sunrise tomorrow",
-        "Zohar today",
-        "Zohar tomorrow",
-        "Asar today",
-        "Asar tomorrow",
-        "Maghrib today",
-        "Maghrib tomorrow",
-        "Isha today",
-        "Isha tomorrow",
-        "Jummah Khutbah",
-      ].includes(entry.Name)
-    );
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - day);
+  startOfWeek.setHours(0, 0, 0, 0);
 
-    times.value = filteredData;
-    console.log("Data fetched at:", new Date().toLocaleTimeString());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
 
-    // Schedule the next page reload based on Jamat times
-    scheduleNextReload();
-  } catch (error) {
-    console.error("Error fetching timetable:", error);
-  }
+  const startISO = startOfWeek.toISOString().split("T")[0];
+  const endISO = endOfWeek.toISOString().split("T")[0];
+  return { startISO, endISO };
 }
 
-function scheduleNextReload() {
-  const now = new Date();
-  const currentTime = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
+/** Fetch all SalaahTimes within Sunday–Saturday */
+async function fetchWeekData() {
+  const { startISO, endISO } = getWeekRange();
+  const queryParams = new URLSearchParams({
+    "filters[date][$gte]": startISO,
+    "filters[date][$lte]": endISO,
+    populate: "*",
   });
 
-  const jamatTimes = times.value
-    .filter((entry) => entry["Jamat Time"])
-    .map((entry) => {
-      const [, time] = entry["Jamat Time"].split("T");
-      return time.slice(0, 8); // Extract the time portion in "HH:mm:ss" format
+  const url = `${
+    import.meta.env.VITE_STRAPI_URL
+  }/api/salaah-times?${queryParams}`;
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
     });
-
-  console.log("Current time:", currentTime); // Log the current time
-
-  let nextReloadTime = null;
-
-  for (const jamatTime of jamatTimes) {
-    const [hours, minutes, seconds] = jamatTime.split(":");
-    const reloadTime = new Date(now);
-    reloadTime.setHours(hours);
-    reloadTime.setMinutes(minutes);
-    reloadTime.setSeconds(seconds);
-    reloadTime.setMilliseconds(0);
-
-    if (reloadTime < now) {
-      reloadTime.setDate(reloadTime.getDate() + 1); // If the reload time is earlier than the current time, set it to the next day
-    }
-
-    reloadTime.setMinutes(reloadTime.getMinutes() + 5); // Add 5 minutes to the reload time
-    if (nextReloadTime === null || reloadTime < nextReloadTime) {
-      nextReloadTime = reloadTime;
-    }
-  }
-
-  if (nextReloadTime) {
-    const delay = nextReloadTime - now;
-    console.log(
-      "Next reload scheduled at:",
-      nextReloadTime.toLocaleTimeString()
-    ); // Log the next reload time
-    setTimeout(() => {
-      location.reload();
-    }, delay);
-  } else {
-    console.log("No reload scheduled."); // Log if no reload is scheduled
+    if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
+    const data = await resp.json();
+    weekData.value = data.data || [];
+    buildTodaysData();
+  } catch (err) {
+    weekData.value = [];
   }
 }
 
-const formattedTimes = computed(() => {
-  return times.value.map((entry) => {
-    const formattedStartTime = formatTime(entry["Start Time"]);
-    const formattedJamatTime = formatTime(entry["Jamat Time"]);
+/** Build final array for today's prayers + Jummah from Friday */
+function buildTodaysData() {
+  const todayISO = new Date().toISOString().split("T")[0];
+  const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
+  const fridayRecord = weekData.value.find((r) => {
+    const d = new Date(r?.date || "");
+    return d.getDay() === 5; // 5=Friday
+  });
+
+  const dailyPrayers = processDailyPrayers(todaysRecord);
+  const jummahRow = processJummah(fridayRecord);
+
+  finalArray.value = [...dailyPrayers, jummahRow];
+}
+
+/** Parse daily prayers from 'todaysRecord' */
+function processDailyPrayers(entry) {
+  if (!entry) return [];
+
+  const item = entry;
+  const prayers = [
+    { name: "Fajr", start: "fajr_start", jamat: "fajr_jamat" },
+    { name: "Sunrise", start: "sunrise", jamat: null },
+    { name: "Zuhr", start: "zohar_start", jamat: "zohar_jamat" },
+    { name: "Asr", start: "asr_start", jamat: "asr_jamat" },
+    { name: "Maghrib", start: "maghrib_start", jamat: "maghrib_jamat" },
+    { name: "Isha", start: "isha_start", jamat: "isha_jamat" },
+  ];
+
+  return prayers.map((prayer) => {
+    const st = item[prayer.start] || "";
+    const jt = prayer.jamat ? item[prayer.jamat] || "" : null;
     return {
-      ...entry,
-      "Start Time": formattedStartTime,
-      "Jamat Time": formattedJamatTime,
+      Name: prayer.name,
+      "Start Time": st.slice(0, 5),
+      "Jamat Time": jt ? jt.slice(0, 5) : jt,
     };
   });
-});
-
-console.log(formattedTimes);
-
-function formatTime(timeString) {
-  if (!timeString) return "";
-
-  const [hours, minutes] = timeString.split("T")[1].split(":");
-  const hour = parseInt(hours, 10);
-  const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-  return `${formattedHour}:${minutes}`;
 }
 
+/** Parse jummah times from the Friday record */
+function processJummah(entry) {
+  if (!entry) {
+    return { Name: "Jummah", "Start Time": "", "Jamat Time": "" };
+  }
+  const item = entry;
+  return {
+    Name: "Jummah",
+    "Start Time": item.jummah_1 ? item.jummah_1.slice(0, 5) : "",
+    "Jamat Time": item.jummah_2 ? item.jummah_2.slice(0, 5) : "",
+  };
+}
+
+/** On mount, fetch the data for this week */
 onMounted(() => {
-  fetchTimetable(); // Fetch immediately on mount
-  setInterval(() => {
-    currentTime.value = new Date(); // Update current time every second
-  }, 1000);
+  fetchWeekData();
 });
 </script>
 
 <template>
   <div class="timetable-container">
-    <div v-if="formattedTimes.length" class="timetable">
+    <div v-if="finalArray.length" class="timetable">
       <div class="timetable__header">
         <span class="name-column"></span>
-        <span class="time-column">Start Time</span>
-        <span class="time-column">Jamat Time</span>
+        <span class="time-column">Start</span>
+        <span class="time-column">Jamat</span>
       </div>
       <ul class="timetable__list">
         <li
-          v-for="time in formattedTimes"
-          :key="time.id"
-          :class="{
-            jummah: time.Name === 'Jummah Khutbah',
-          }"
+          v-for="(row, index) in finalArray"
+          :key="index"
+          :class="{ jummah: row.Name === 'Jummah' }"
         >
-          <span class="name-column">{{ time.Name.split(" ")[0] }}</span>
-          <template v-if="time['Start Time'] && !time['Jamat Time']">
-            <span class="time-column full-width">{{ time["Start Time"] }}</span>
+          <span class="name-column">{{ row.Name }}</span>
+
+          <!-- If only one time is present -->
+          <template v-if="row['Start Time'] && !row['Jamat Time']">
+            <span class="time-column full-width">{{ row["Start Time"] }}</span>
           </template>
-          <template v-else-if="time['Start Time'] === time['Jamat Time']">
-            <span class="time-column full-width">{{ time["Jamat Time"] }}</span>
+
+          <!-- If both times exist & are same -->
+          <template
+            v-else-if="
+              row['Start Time'] === row['Jamat Time'] && row['Start Time']
+            "
+          >
+            <span class="time-column full-width">{{ row["Start Time"] }}</span>
           </template>
+
+          <!-- Otherwise, show both -->
           <template v-else>
-            <span class="time-column">{{ time["Start Time"] }}</span>
-            <span class="time-column">{{ time["Jamat Time"] }}</span>
+            <span class="time-column">{{ row["Start Time"] }}</span>
+            <span class="time-column">{{ row["Jamat Time"] }}</span>
           </template>
         </li>
       </ul>
     </div>
-    <div v-else class="skeleton-table">
-      <div class="skeleton-row" v-for="i in 5" :key="i">
-        <div class="skeleton-cell skeleton-name"></div>
-        <div class="skeleton-cell skeleton-time"></div>
-        <div class="skeleton-cell skeleton-time"></div>
-      </div>
+    <div v-else class="no-data">
+      <p>No data found for this week or today.</p>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .timetable-container {
-  height: 100%;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   padding: 16px;
-  display: flex;
 
   .timetable {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
 
     &__header {
       display: flex;
@@ -180,13 +173,12 @@ onMounted(() => {
       font-size: 1.2rem;
       font-weight: 600;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
 
       .name-column {
         width: 40%;
         text-align: left;
       }
-
       .time-column {
         flex: 1;
         text-align: center;
@@ -197,18 +189,15 @@ onMounted(() => {
       list-style: none;
       padding: 0;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      justify-content: space-between;
 
       li {
         display: flex;
         align-items: center;
         background: #f8f9fa;
         border-radius: 8px;
-        padding: 20px 16px;
+        padding: 13px;
         font-size: 1.6rem;
+        margin-bottom: 8px;
         transition: background-color 0.2s ease;
 
         &.jummah {
@@ -220,9 +209,6 @@ onMounted(() => {
           width: 40%;
           font-weight: 600;
           color: #2d3748;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
 
         .time-column {
@@ -239,45 +225,36 @@ onMounted(() => {
     }
   }
 
-  .skeleton-table {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .no-data {
+    text-align: center;
+    padding: 30px;
+    font-size: 1.4rem;
+    color: #666;
+  }
+}
 
-    .skeleton-row {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-
-      .skeleton-cell {
-        background: #f0f0f0;
-        height: 48px;
-        border-radius: 8px;
-        animation: skeleton-loading 1.5s infinite;
-
-        &.skeleton-name {
-          width: 40%;
-        }
-
-        &.skeleton-time {
-          width: 30%;
-        }
-      }
-    }
+/* MOBILE-FRIENDLY */
+@media (max-width: 600px) {
+  .timetable__header {
+    display: none; /* hide the header row on mobile for more space */
   }
 
-  @media (max-width: 1024px) {
-    .timetable {
-      &__header {
-        font-size: 1.1rem;
-        padding: 8px;
-      }
+  .timetable__list li {
+    flex-wrap: wrap;
+    font-size: 1.4rem;
 
-      &__list li {
-        font-size: 1.4rem;
-        padding: 16px;
-      }
+    .name-column {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 6px;
+    }
+    .time-column {
+      width: 50%;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .time-column.full-width {
+      width: 100%;
     }
   }
 }

@@ -60,9 +60,11 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
+@import '../_stylesetter.scss'; // Adjust the path as necessary
+
 header {
-  padding: 0 24px;
-  background: #ffffff;
+  padding: $padding-medium;
+  background: $color-primary;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   .header-row {
@@ -77,7 +79,7 @@ header {
     display: flex;
     align-items: center;
     height: 100%;
-    padding: 0 16px;
+    padding: 0 $padding-small;
   }
 
   .logo-container {
@@ -90,9 +92,9 @@ header {
     }
 
     span {
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #2d3748;
+      font-size: $font-size-large;
+      font-weight: $font-weight-bold;
+      color: $color-accent;
     }
   }
 
@@ -100,9 +102,9 @@ header {
     justify-content: center;
 
     span {
-      font-size: 1.4rem;
-      color: #4a5568;
-      font-weight: 700;
+      font-size: $font-size-large;
+      color: $color-secondary;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -111,12 +113,12 @@ header {
 
     .time {
       font-size: 2.5rem;
-      font-weight: 700;
-      color: #2d3748;
+      font-weight: $font-weight-bold;
+      color: $color-accent;
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: $breakpoint-desktop) {
     height: 70px;
     padding: 0 12px;
 
@@ -130,12 +132,12 @@ header {
       }
 
       span {
-        font-size: 1.2rem;
+        font-size: $font-size-medium;
       }
     }
 
     .date-container span {
-      font-size: 1.1rem;
+      font-size: $font-size-small;
     }
 
     .time-container .time {
@@ -143,7 +145,7 @@ header {
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-mobile) {
     height: auto;
     padding: 12px;
 
@@ -166,7 +168,7 @@ header {
       }
 
       span {
-        font-size: 1.2rem;
+        font-size: $font-size-small;
       }
     }
 
@@ -175,7 +177,7 @@ header {
       justify-content: center;
 
       span {
-        font-size: 1rem;
+        font-size: $font-size-small;
       }
     }
 

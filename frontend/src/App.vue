@@ -1,8 +1,7 @@
 <script setup>
-import TimeTable from "./components/TimeTable.vue";
+import SalaahView from './views/SalaahView.vue'
 import Date from "./components/Date.vue";
 import News from "./components/News.vue";
-import NextPrayer from "./components/NextPrayer.vue";
 </script>
 
 <template>
@@ -10,10 +9,9 @@ import NextPrayer from "./components/NextPrayer.vue";
     <Date class="date-component" />
     <div class="tv-display__body">
       <div class="tv-display__main">
-        <TimeTable class="timetable-component" />
+        <SalaahView class="timetable-component" />
         <News class="news-component" />
       </div>
-      <NextPrayer class="next-prayer-component" />
     </div>
   </div>
 </template>
@@ -63,9 +61,12 @@ body {
     gap: 16px;
     padding: 24px;
     height: calc(100vh - 6rem);
-    overflow: auto; /* Allow internal scrolling in each section */
+    overflow: hidden; /* Prevent overflow to avoid extra space */
 
-    /* No overflow here, large screens won't scroll. Body does on mobile if needed. */
+    /* Adjust to ensure both components are visible */
+    @media (max-width: 1024px) {
+      height: auto; /* Allow full height on mobile */
+    }
   }
 
   &__main {
@@ -84,38 +85,34 @@ body {
       display: flex;
       flex-direction: column;
       overflow: hidden; /* For large screens, hidden */
-
-      /* On mobile/tablet, each section is full screen (100vh) and scrollable */
-      @media (max-width: 1024px) {
-        min-height: 90%; /* Fill entire viewport on mobile */
-      }
     }
 
     .timetable-component {
       flex: 4;
+      height: 100%; /* Ensure it takes full height */
+
+      /* On mobile/tablet, each section is full screen (100vh) and scrollable */
+      @media (max-width: 1024px) {
+        min-height: 100%; /* Ensure both components are fully visible */
+      }
     }
 
     .news-component {
       flex: 6;
       display: block; /* or flex, your choice */
+      padding: 10px;
     }
 
     @media (max-width: 1024px) {
       flex-direction: column;
-      height: auto;
+      height: auto; /* Allow full height on mobile */
     }
-  }
-
-  .next-prayer-component {
-    flex-shrink: 0;
-    height: auto;
   }
 
   @media (max-width: 768px) {
     &__body {
       padding: 16px;
       gap: 16px;
-      /* body can still scroll if overall content is bigger than 100vh */
     }
 
     &__main {

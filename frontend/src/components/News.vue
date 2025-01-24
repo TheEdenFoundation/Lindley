@@ -64,10 +64,12 @@ onMounted(fetchSlideshow);
 </template>
 
 <style lang="scss" scoped>
+@import '../_stylesetter.scss'; // Adjust the path as necessary
+
 .news-container {
   height: 100%;
   position: relative;
-  border-radius: 12px;
+  border-radius: $border-radius;
   overflow: hidden;
 
   .swiper {
@@ -94,7 +96,7 @@ onMounted(fetchSlideshow);
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: $breakpoint-desktop) {
     aspect-ratio: 16/9;
     height: 100%;
 
@@ -103,11 +105,11 @@ onMounted(fetchSlideshow);
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-mobile) {
     min-height: 400px;
 
     .news-item {
-      padding: 16px 0;
+      padding: $padding-small 0;
     }
   }
 }

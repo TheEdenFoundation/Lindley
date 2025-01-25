@@ -5,12 +5,20 @@
       :nextName="nextPrayerName"
       :nextCountdown="nextPrayerCountdown"
     />
-    <TimeTable :prayers="finalArray" />
+    <TimeTable
+      :prayers="finalArray"
+      :activeName="currentPrayerName"
+      :tomorrowData="tomorrowData"
+    />
+
+    <div v-if="loading">Loading...</div>
+    <div v-if="error" class="error">{{ error }}</div>
   </section>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import axios from "axios";
 import NextPrayer from "../components/NextPrayer.vue";
 import TimeTable from "../components/TimeTable.vue";
 
@@ -26,6 +34,9 @@ const tomorrowData = ref([]);
 // Next prayer states
 const nextPrayerName = ref("");
 const nextPrayerCountdown = ref("");
+const currentPrayerName = ref("");
+const loading = ref(true);
+const error = ref(null);
 
 /** INTERVAL / TIMEOUT HANDLES **/
 let updateInterval = null;
@@ -52,57 +63,64 @@ function getWeekRange() {
 
 /** 2) FETCH current Sunday–Saturday from Strapi */
 async function fetchWeekData() {
-  const { startISO, endISO } = getWeekRange();
-  const queryParams = new URLSearchParams({
-    "filters[date][$gte]": startISO,
-    "filters[date][$lte]": endISO,
-    populate: "*",
-  });
-  const url = `${
-    import.meta.env.VITE_STRAPI_URL
-  }/api/salaah-times?${queryParams}`;
+  loading.value = true;
+  error.value = null;
 
   try {
-    const resp = await fetch(url, {
+    const { startISO, endISO } = getWeekRange();
+    const queryParams = new URLSearchParams({
+      "filters[date][$gte]": startISO,
+      "filters[date][$lte]": endISO,
+      populate: "*",
+    });
+    const url = `${
+      import.meta.env.VITE_STRAPI_URL
+    }/api/salaah-times?${queryParams}`;
+
+    const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`,
         "Content-Type": "application/json",
       },
     });
-    if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
-    const data = await resp.json();
-    weekData.value = data.data || [];
+
+    weekData.value = response.data.data || [];
     buildTodaysData();
   } catch (err) {
-    weekData.value = [];
-    console.error("Error fetching weekData:", err);
+    error.value = err.message;
+    console.error("Error fetching week data:", err);
+  } finally {
+    loading.value = false;
   }
 }
 
 /** 3) Always fetch tomorrow's date from Strapi */
 async function fetchTomorrowData() {
-  // Tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowISO = tomorrow.toISOString().split("T")[0];
+  loading.value = true;
+  error.value = null;
 
-  const url = `${
-    import.meta.env.VITE_STRAPI_URL
-  }/api/salaah-times?filters[date][$eq]=${tomorrowISO}&populate=*`;
   try {
-    const resp = await fetch(url, {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString().split("T")[0];
+
+    const url = `${
+      import.meta.env.VITE_STRAPI_URL
+    }/api/salaah-times?filters[date][$eq]=${tomorrowISO}&populate=*`;
+    const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`,
         "Content-Type": "application/json",
       },
     });
-    if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
-    const data = await resp.json();
-    tomorrowData.value = processTomorrowPrayers(data.data?.[0]);
-    // Ensure no unnecessary logs for tomorrow's data or ID
+
+    tomorrowData.value = processTomorrowPrayers(response.data.data?.[0]);
   } catch (err) {
     tomorrowData.value = [];
-    console.error("Error fetching tomorrowData:", err); // Keep error logging for debugging
+    error.value = err.message;
+    console.error("Error fetching tomorrow data:", err);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -239,6 +257,8 @@ function findNextAndCurrentPrayer() {
     if (diff < 0) diff += 24 * 3600;
     nextPrayerCountdown.value = formatCountdown(diff);
   }
+
+  currentPrayerName.value = nextPrayer?.Name || "";
 }
 
 /** Format X seconds => "Xh Ym" or "Xm Ys" or "Xs" */
@@ -334,3 +354,10 @@ onUnmounted(() => {
   if (midnightTimeout) clearTimeout(midnightTimeout);
 });
 </script>
+
+<style scoped>
+.error {
+  color: red;
+  text-align: center;
+}
+</style>

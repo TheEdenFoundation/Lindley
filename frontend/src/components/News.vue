@@ -3,13 +3,19 @@ import { ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay } from "swiper/modules";
 import "swiper/swiper-bundle.css";
+import axios from "axios";
 
 const newsItems = ref([]);
 const currentBackgroundColor = ref("");
+const loading = ref(true);
+const error = ref(null);
 
 async function fetchSlideshow() {
+  loading.value = true;
+  error.value = null;
+
   try {
-    const response = await fetch(
+    const response = await axios.get(
       `${import.meta.env.VITE_STRAPI_URL}/api/announcements?populate=image`,
       {
         headers: {
@@ -17,19 +23,19 @@ async function fetchSlideshow() {
         },
       }
     );
-    if (!response.ok) throw new Error("Failed to fetch data");
-    const data = await response.json();
 
-    console.log("Slideshow data:", data);
+    console.log("Slideshow data:", response.data);
 
-    // Assuming the structure of the response is { data: [{ attributes: { image: { url: '...' } } }] }
-    newsItems.value = data.data.map((item) => ({
+    newsItems.value = response.data.data.map((item) => ({
       image: `${import.meta.env.VITE_STRAPI_URL}${item.image.url}`,
     }));
 
     console.log("Slideshow images fetched:", newsItems.value);
-  } catch (error) {
-    console.error("Error fetching slideshow data:", error);
+  } catch (err) {
+    error.value = err.message;
+    console.error("Error fetching slideshow data:", err);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -58,8 +64,10 @@ onMounted(fetchSlideshow);
     class="news-container"
     :style="{ backgroundColor: currentBackgroundColor }"
   >
+    <div v-if="loading">Loading...</div>
+    <div v-if="error" class="error">{{ error }}</div>
     <Swiper
-      v-if="newsItems.length"
+      v-else-if="newsItems.length"
       v-bind="swiperConfig"
       @slideChange="onSlideChange"
     >
@@ -153,5 +161,10 @@ onMounted(fetchSlideshow);
   100% {
     background-color: #f0f0f0;
   }
+}
+
+.error {
+  color: red;
+  text-align: center;
 }
 </style>

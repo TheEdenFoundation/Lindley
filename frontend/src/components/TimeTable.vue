@@ -12,7 +12,6 @@
           :key="index"
           :class="{
             jummah: row.Name === 'Jummah',
-            active: row.Name === activeName
           }"
         >
           <span class="name-column">{{ row.Name }}</span>
@@ -23,7 +22,11 @@
           </template>
 
           <!-- If both times exist & same -->
-          <template v-else-if="row['Start Time'] === row['Jamat Time'] && row['Start Time']">
+          <template
+            v-else-if="
+              row['Start Time'] === row['Jamat Time'] && row['Start Time']
+            "
+          >
             <span class="time-column full-width">{{ row["Start Time"] }}</span>
           </template>
 
@@ -42,16 +45,16 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps } from "vue";
 
 const props = defineProps({
   prayers: { type: Array, default: () => [] },
-  activeName: { type: String, default: "" }
-})
+  tomorrowData: { type: Array, default: () => [] },
+});
 </script>
 
 <style lang="scss" scoped>
-@import '../_stylesetter.scss';
+@import "../styles/stylesetter";
 
 .timetable-container {
   width: 100%;
@@ -106,18 +109,12 @@ const props = defineProps({
 
         @media (max-width: $breakpoint-tablet) {
           padding: $padding-small;
-          font-size: 1.25rem;
+          font-size: 1.3rem;
         }
 
         &.jummah {
           background: $color-jummah-bg;
           color: $color-jummah-text;
-        }
-
-        /* Active prayer highlight */
-        &.active {
-          background: #bee3f8; /* Light blue to highlight */
-          color: #2b6cb0;
         }
 
         .name-column {

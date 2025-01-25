@@ -1,34 +1,41 @@
 <template>
   <section class="salaah-view">
-    <NextPrayer :nextName="nextPrayerName" :nextCountdown="nextPrayerCountdown" />
-    <Timetable :prayers="finalArray" :activeName="currentPrayerName" />
+    <!-- Next Prayer + Timetable (unchanged) -->
+    <NextPrayer
+      :nextName="nextPrayerName"
+      :nextCountdown="nextPrayerCountdown"
+    />
+    <TimeTable :prayers="finalArray" />
   </section>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-
-// Import child components
 import NextPrayer from "../components/NextPrayer.vue";
-import Timetable from "../components/Timetable.vue";
+import TimeTable from "../components/TimeTable.vue";
 
-// Reactive state
+/** MAIN STATES **/
+// Weekly data for the current Sunday→Saturday
 const weekData = ref([]);
+// Final array for "today" ( + Jummah row)
 const finalArray = ref([]);
+
+// Tomorrow's data (separate ref)
+const tomorrowData = ref([]);
 
 // Next prayer states
 const nextPrayerName = ref("");
 const nextPrayerCountdown = ref("");
 
-// Current prayer state (which row is "active")
-const currentPrayerName = ref("");
-
+/** INTERVAL / TIMEOUT HANDLES **/
 let updateInterval = null;
+let midnightTimeout = null;
 
-/** Sunday → Saturday date range (YYYY-MM-DD) */
+/** 1) Sunday→Saturday range (YYYY-MM-DD) */
 function getWeekRange() {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+  const day = now.getDay(); // 0=Sun,...6=Sat
+
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - day);
   startOfWeek.setHours(0, 0, 0, 0);
@@ -43,7 +50,7 @@ function getWeekRange() {
   };
 }
 
-/** Fetch SalaahTimes from Strapi for this week */
+/** 2) FETCH current Sunday–Saturday from Strapi */
 async function fetchWeekData() {
   const { startISO, endISO } = getWeekRange();
   const queryParams = new URLSearchParams({
@@ -51,8 +58,9 @@ async function fetchWeekData() {
     "filters[date][$lte]": endISO,
     populate: "*",
   });
-
-  const url = `${import.meta.env.VITE_STRAPI_URL}/api/salaah-times?${queryParams}`;
+  const url = `${
+    import.meta.env.VITE_STRAPI_URL
+  }/api/salaah-times?${queryParams}`;
 
   try {
     const resp = await fetch(url, {
@@ -67,12 +75,67 @@ async function fetchWeekData() {
     buildTodaysData();
   } catch (err) {
     weekData.value = [];
+    console.error("Error fetching weekData:", err);
   }
 }
 
-/** Build final array for today's prayers + Jummah */
+/** 3) Always fetch tomorrow's date from Strapi */
+async function fetchTomorrowData() {
+  // Tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowISO = tomorrow.toISOString().split("T")[0];
+
+  const url = `${
+    import.meta.env.VITE_STRAPI_URL
+  }/api/salaah-times?filters[date][$eq]=${tomorrowISO}&populate=*`;
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
+    const data = await resp.json();
+    tomorrowData.value = processTomorrowPrayers(data.data?.[0]);
+    // Ensure no unnecessary logs for tomorrow's data or ID
+  } catch (err) {
+    tomorrowData.value = [];
+    console.error("Error fetching tomorrowData:", err); // Keep error logging for debugging
+  }
+}
+
+/** Parse tomorrow's record into the same shape as daily prayers */
+function processTomorrowPrayers(entry) {
+  if (!entry) {
+    return [];
+  }
+  const item = entry;
+  const prayers = [
+    { name: "Fajr", start: "fajr_start", jamat: "fajr_jamat" },
+    { name: "Sunrise", start: "sunrise", jamat: null },
+    { name: "Zuhr", start: "zohar_start", jamat: "zohar_jamat" },
+    { name: "Asr", start: "asr_start", jamat: "asr_jamat" },
+    { name: "Maghrib", start: "maghrib_start", jamat: "maghrib_jamat" },
+    { name: "Isha", start: "isha_start", jamat: "isha_jamat" },
+  ];
+
+  return prayers.map((pr) => ({
+    Name: pr.name,
+    "Start Time": item[pr.start] ? item[pr.start].slice(0, 5) : "",
+    "Jamat Time": item[pr.jamat] ? item[pr.jamat].slice(0, 5) : "",
+  }));
+}
+
+/** Build today's final array (+ Jummah) and include tomorrow's data for passed prayers */
 function buildTodaysData() {
-  const todayISO = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const currentSec =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const todayISO = now.toISOString().split("T")[0];
+
+  // Find today's and Friday's records
   const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
   const fridayRecord = weekData.value.find((r) => {
     const d = new Date(r?.date || "");
@@ -81,12 +144,29 @@ function buildTodaysData() {
 
   const dailyPrayers = processDailyPrayers(todaysRecord);
   const jummahRow = processJummah(fridayRecord);
-  finalArray.value = [...dailyPrayers, jummahRow];
 
+  // Replace passed prayers with tomorrow's data
+  const updatedPrayers = dailyPrayers.map((prayer, index) => {
+    // Convert prayer time to seconds
+    const timeStr = prayer["Jamat Time"] || prayer["Start Time"];
+    if (!timeStr) return prayer; // Skip if no time available
+
+    const [hh, mm] = timeStr.split(":");
+    const prayerSec = parseInt(hh, 10) * 3600 + parseInt(mm, 10) * 60;
+
+    // If prayer has passed, replace with tomorrow's equivalent
+    if (prayerSec + 300 < currentSec && tomorrowData.value[index]) {
+      // Add 5 minutes (300 seconds) to jamat time threshold
+      return tomorrowData.value[index];
+    }
+    return prayer;
+  });
+
+  finalArray.value = [...updatedPrayers, jummahRow];
   findNextAndCurrentPrayer();
 }
 
-/** Convert the 'today' record into an array of standard prayers */
+/** Process daily prayers for "today" */
 function processDailyPrayers(entry) {
   if (!entry) return [];
   const item = entry;
@@ -99,22 +179,16 @@ function processDailyPrayers(entry) {
     { name: "Isha", start: "isha_start", jamat: "isha_jamat" },
   ];
 
-  return prayers.map((prayer) => {
-    const st = item[prayer.start] || "";
-    const jt = prayer.jamat ? item[prayer.jamat] || "" : null;
-    return {
-      Name: prayer.name,
-      "Start Time": st.slice(0, 5),
-      "Jamat Time": jt ? jt.slice(0, 5) : jt,
-    };
-  });
+  return prayers.map((prayer) => ({
+    Name: prayer.name,
+    "Start Time": item[prayer.start] ? item[prayer.start].slice(0, 5) : "",
+    "Jamat Time": item[prayer.jamat] ? item[prayer.jamat].slice(0, 5) : "",
+  }));
 }
 
 /** Convert the Friday record into a "Jummah" row */
 function processJummah(entry) {
-  if (!entry) {
-    return { Name: "Jummah", "Start Time": "", "Jamat Time": "" };
-  }
+  if (!entry) return { Name: "Jummah", "Start Time": "", "Jamat Time": "" };
   const item = entry;
   return {
     Name: "Jummah",
@@ -123,15 +197,18 @@ function processJummah(entry) {
   };
 }
 
-/** Find next + current prayer, setting nextPrayerName, nextPrayerCountdown, currentPrayerName */
+/**
+ * Find next & current prayer, updating nextPrayerName,
+ * nextPrayerCountdown
+ */
 function findNextAndCurrentPrayer() {
   const now = new Date();
-  const currentSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const currentSec =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
   let nextPrayer = null;
-  let activePrayer = null;
 
-  // Convert times to seconds
+  // convert times to seconds
   const prayersWithSec = finalArray.value.map((p) => {
     const timeStr = p["Start Time"];
     if (!timeStr) return { ...p, sec: null };
@@ -140,39 +217,19 @@ function findNextAndCurrentPrayer() {
     return { ...p, sec: s };
   });
 
-  // Next prayer = first that is in the future
+  // next prayer = first that is in the future
   for (const p of prayersWithSec) {
     if (p.sec != null && p.sec > currentSec) {
       nextPrayer = p;
       break;
     }
   }
-  // If none left, next = first (tomorrow)
+  // if none left, next => first (tomorrow)
   if (!nextPrayer && prayersWithSec.length > 0) {
     nextPrayer = prayersWithSec[0];
   }
 
-  // Active prayer: if p[i].sec <= now < p[i+1].sec
-  for (let i = 0; i < prayersWithSec.length; i++) {
-    const pSec = prayersWithSec[i].sec;
-    if (pSec == null) continue;
-    const nextSec = prayersWithSec[i + 1]?.sec;
-    if (!nextSec) {
-      // Past last
-      if (pSec <= currentSec) {
-        activePrayer = prayersWithSec[i];
-      }
-    } else {
-      if (pSec <= currentSec && currentSec < nextSec) {
-        activePrayer = prayersWithSec[i];
-        break;
-      }
-    }
-  }
-
-  currentPrayerName.value = activePrayer?.Name || "";
-
-  // next prayer
+  // Next prayer name & countdown
   if (!nextPrayer) {
     nextPrayerName.value = "No upcoming prayers";
     nextPrayerCountdown.value = "";
@@ -200,22 +257,80 @@ function formatCountdown(seconds) {
   }
 }
 
-/** onMounted => fetch data + start interval */
+/**
+ * Schedules a refresh of `weekData` at midnight
+ * => re-fetch current week's data
+ */
+function scheduleMidnightRefresh() {
+  // calc ms until midnight
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  const msUntilMidnight = tomorrow - now;
+
+  // set a timeout
+  midnightTimeout = setTimeout(() => {
+    console.log("It's midnight! Re-fetching weekData...");
+    fetchWeekData();
+    fetchTomorrowData();
+    // re-schedule for next midnight
+    scheduleMidnightRefresh();
+  }, msUntilMidnight);
+}
+
+/** Update specific prayers that have passed with tomorrow's data */
+function updatePassedPrayers() {
+  const now = new Date();
+  const currentSec =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+  finalArray.value = finalArray.value.map((prayer) => {
+    const prayerTimeStr = prayer["Start Time"];
+    if (!prayerTimeStr) return prayer; // Skip if no start time
+
+    const [hh, mm] = prayerTimeStr.split(":");
+    const prayerSec = parseInt(hh, 10) * 3600 + parseInt(mm, 10) * 60;
+
+    // Check if the prayer time has passed
+    if (prayerSec <= currentSec) {
+      // Find tomorrow's corresponding prayer time
+      const tomorrowPrayer = tomorrowData.value.find(
+        (tomorrow) => tomorrow.Name === prayer.Name
+      );
+      if (tomorrowPrayer) {
+        // Update the prayer with tomorrow's time
+        return {
+          ...prayer,
+          "Start Time": tomorrowPrayer["Start Time"],
+          "Jamat Time": tomorrowPrayer["Jamat Time"],
+        };
+      } else {
+      }
+    } else {
+    }
+    return prayer; // Return unchanged prayer
+  });
+}
+
 onMounted(() => {
+  // Fetch week and tomorrow's data
   fetchWeekData();
+  fetchTomorrowData();
+
+  // Schedule refresh at midnight
+  scheduleMidnightRefresh();
+
+  // Update next/current prayer every second and update passed prayers every 5 minutes
   updateInterval = setInterval(() => {
-    findNextAndCurrentPrayer();
-  }, 1000);
+    findNextAndCurrentPrayer(); // Updates next prayer and current prayer
+    updatePassedPrayers(); // Ensures passed prayers are updated with tomorrow's data
+  }, 1000); // Every second
 });
 
 /** Cleanup */
 onUnmounted(() => {
   if (updateInterval) clearInterval(updateInterval);
+  if (midnightTimeout) clearTimeout(midnightTimeout);
 });
 </script>
-
-<style scoped>
-.salaah-view {
-  /* Container styling if needed */
-}
-</style>

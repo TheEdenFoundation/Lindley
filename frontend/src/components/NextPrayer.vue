@@ -11,31 +11,31 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps } from "vue";
 
 const props = defineProps({
   nextName: { type: String, default: "No upcoming prayers" },
-  nextCountdown: { type: String, default: "" }
-})
+  nextCountdown: { type: String, default: "" },
+});
 </script>
 
 <style scoped lang="scss">
-@import '../_stylesetter.scss';
+@import "../styles/stylesetter";
 
 .next-prayer {
-  background: #c6f6d5; /* light green */
+  background: $color-success;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 16px 24px;
   margin-bottom: 16px;
 
   &__title {
     font-size: 2rem;
-    color: #2f855a;
+    color: $color-accent;
     font-weight: bold;
 
     @media (max-width: $breakpoint-tablet) {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
     }
     span {
       font-weight: normal;

@@ -9,13 +9,27 @@ const currentBackgroundColor = ref("");
 
 async function fetchSlideshow() {
   try {
-    const response = await fetch(import.meta.env.VITE_GOOGLE_SLIDESHOW_API_URL);
+    const response = await fetch(
+      `${import.meta.env.VITE_STRAPI_URL}/api/announcements?populate=image`,
+      {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`,
+        },
+      }
+    );
     if (!response.ok) throw new Error("Failed to fetch data");
     const data = await response.json();
-    newsItems.value = data.data;
-    console.log("Slideshow fetched at:", new Date().toLocaleTimeString());
+
+    console.log("Slideshow data:", data);
+
+    // Assuming the structure of the response is { data: [{ attributes: { image: { url: '...' } } }] }
+    newsItems.value = data.data.map((item) => ({
+      image: `${import.meta.env.VITE_STRAPI_URL}${item.image.url}`,
+    }));
+
+    console.log("Slideshow images fetched:", newsItems.value);
   } catch (error) {
-    console.error("Error fetching news data:", error);
+    console.error("Error fetching slideshow data:", error);
   }
 }
 
@@ -64,7 +78,7 @@ onMounted(fetchSlideshow);
 </template>
 
 <style lang="scss" scoped>
-@import '../_stylesetter.scss'; // Adjust the path as necessary
+@import "../styles/stylesetter";
 
 .news-container {
   height: 100%;

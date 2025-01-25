@@ -1,5 +1,5 @@
 <script setup>
-import SalaahView from './views/SalaahView.vue'
+import SalaahView from "./views/SalaahView.vue";
 import Date from "./components/Date.vue";
 import News from "./components/News.vue";
 </script>
@@ -60,7 +60,7 @@ body {
     flex-direction: column;
     gap: 16px;
     padding: 24px;
-    height: calc(100vh - 6rem);
+    height: calc(100vh - 8rem);
     overflow: hidden; /* Prevent overflow to avoid extra space */
 
     /* Adjust to ensure both components are visible */

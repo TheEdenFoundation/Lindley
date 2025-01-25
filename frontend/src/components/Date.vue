@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { ref, onMounted } from "vue";
+import moment from "moment-hijri"; // Import the moment-hijri library
 
 const date = ref("");
 const hijri = ref("");
@@ -15,23 +16,19 @@ function updateTime() {
   });
 }
 
-onMounted(async () => {
-  try {
-    const response = await fetch(import.meta.env.VITE_GOOGLE_TIMETABLE_API_URL);
-    if (!response.ok) throw new Error("Failed to fetch data");
+onMounted(() => {
+  const now = new Date();
+  date.value = now.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
-    const data = await response.json();
-    const formatDate = new Date(data.data[0].Name);
-    date.value = formatDate.toLocaleDateString("en-GB", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-    hijri.value = `${data.data[1].Name}`;
-  } catch (error) {
-    console.error("Error fetching timetable:", error);
-  }
+  // Set locale to English and calculate the Islamic date dynamically
+  moment.locale("en"); // Set locale to English
+  const hijriDate = moment(now).format("iD iMMMM iYYYY"); // Format to get day, month, and year
+  hijri.value = `${hijriDate}`; // Set the hijri value
 
   updateTime();
   setInterval(updateTime, 1000);
@@ -42,17 +39,13 @@ onMounted(async () => {
   <header>
     <div class="header-row">
       <div class="header-section logo-container">
-        <img
-          src="../assets/logo.svg"
-          alt="Madni Jamia Masjid Logo"
-          class="logo"
-        />
-        <span>Madni Jamia Masjid</span>
+        <img src="../assets/logo.svg" alt="Shah Jalal Masjid" class="logo" />
+        <span>Shah Jalal Masjid</span>
       </div>
       <div class="header-section date-container" v-if="date && hijri">
         <span>{{ date }} | {{ hijri }}</span>
       </div>
-      <div class="header-section time-container" v-if="date && hijri">
+      <div class="header-section time-container" v-if="currentTime">
         <span class="time">{{ currentTime }}</span>
       </div>
     </div>
@@ -60,7 +53,7 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-@import '../_stylesetter.scss'; // Adjust the path as necessary
+@import "../styles/stylesetter";
 
 header {
   padding: $padding-medium;
@@ -80,6 +73,10 @@ header {
     align-items: center;
     height: 100%;
     padding: 0 $padding-small;
+
+    span {
+      color: $color-accent;
+    }
   }
 
   .logo-container {
@@ -87,7 +84,7 @@ header {
     gap: 16px;
 
     img {
-      height: 50px;
+      height: 100px;
       width: auto;
     }
 
@@ -95,6 +92,11 @@ header {
       font-size: $font-size-large;
       font-weight: $font-weight-bold;
       color: $color-accent;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+      position: relative;
+      top: 15px;
     }
   }
 
@@ -164,11 +166,7 @@ header {
       gap: 12px;
 
       img {
-        height: 36px;
-      }
-
-      span {
-        font-size: $font-size-small;
+        height: 56px;
       }
     }
 
@@ -178,6 +176,7 @@ header {
 
       span {
         font-size: $font-size-small;
+        top: 10px;
       }
     }
 

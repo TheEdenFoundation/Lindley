@@ -1,5 +1,4 @@
 const config = {
-  const config = {
   translations: {
     en: {
       "app.components.LeftMenu.navbrand.title": "Masjidly",
@@ -9,18 +8,6 @@ const config = {
         "Credentials are only used to authenticate in Masjidly. All saved data will be stored in your database.",
     },
   },
-};
-
-const bootstrap = (app) => {
-  console.log(app);
-};
-
-export default {
-  config,
-  bootstrap,
-};
-
-  ],
 };
 
 const bootstrap = (app) => {

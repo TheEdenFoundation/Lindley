@@ -1,31 +1,25 @@
 const config = {
-  locales: [
-    // 'ar',
-    // 'fr',
-    // 'cs',
-    // 'de',
-    // 'dk',
-    // 'es',
-    // 'he',
-    // 'id',
-    // 'it',
-    // 'ja',
-    // 'ko',
-    // 'ms',
-    // 'nl',
-    // 'no',
-    // 'pl',
-    // 'pt-BR',
-    // 'pt',
-    // 'ru',
-    // 'sk',
-    // 'sv',
-    // 'th',
-    // 'tr',
-    // 'uk',
-    // 'vi',
-    // 'zh-Hans',
-    // 'zh',
+  const config = {
+  translations: {
+    en: {
+      "app.components.LeftMenu.navbrand.title": "Masjidly",
+      "Auth.form.welcome.subtitle": "Log in to your Masjidly account",
+      "Auth.form.welcome.title": "Welcome to Masjidly!",
+      "Auth.form.register.subtitle":
+        "Credentials are only used to authenticate in Masjidly. All saved data will be stored in your database.",
+    },
+  },
+};
+
+const bootstrap = (app) => {
+  console.log(app);
+};
+
+export default {
+  config,
+  bootstrap,
+};
+
   ],
 };
 

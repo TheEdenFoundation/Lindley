@@ -54,7 +54,7 @@ onMounted(() => {
   updateInterval = setInterval(() => {
     updateTime();
     scheduleMidnightRefresh();
-  }, 1000000);
+  }, 1000);
 });
 
 /** Cleanup */

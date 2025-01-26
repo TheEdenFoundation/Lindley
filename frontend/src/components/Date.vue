@@ -54,13 +54,7 @@ onMounted(() => {
   updateInterval = setInterval(() => {
     updateTime();
     scheduleMidnightRefresh();
-  }, 1000000);
-});
-
-/** Cleanup */
-onUnmounted(() => {
-  if (updateInterval) clearInterval(updateInterval);
-  if (midnightTimeout) clearTimeout(midnightTimeout);
+  }, 1000);
 });
 </script>
 

@@ -127,7 +127,7 @@ const props = defineProps({
           flex: 1;
           text-align: center;
           color: #4a5568;
-          font-weight: $font-weight-extrabold;
+          font-weight: $font-weight-extra-bold;
 
           &.full-width {
             flex: 2;

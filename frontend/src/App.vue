@@ -88,7 +88,7 @@ body {
     }
 
     .timetable-component {
-      flex: 4;
+      flex: 5;
       height: 100%; /* Ensure it takes full height */
 
       /* On mobile/tablet, each section is full screen (100vh) and scrollable */

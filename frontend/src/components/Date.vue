@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import moment from "moment-hijri"; // Import the moment-hijri library
 
 const date = ref("");
 const hijri = ref("");
 const currentTime = ref("");
+let midnightTimeout = null;
+let updateInterval = null;
 
 function updateTime() {
   const now = new Date();
@@ -14,6 +16,23 @@ function updateTime() {
     second: "2-digit",
     hour12: true,
   });
+}
+
+function scheduleMidnightRefresh() {
+  // calc ms until midnight
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  const msUntilMidnight = tomorrow - now;
+
+  // set a timeout
+  midnightTimeout = setTimeout(() => {
+    console.log("It's midnight! Re-fetching time...");
+    uodateTime();
+    // re-schedule for next midnight
+    scheduleMidnightRefresh();
+  }, msUntilMidnight);
 }
 
 onMounted(() => {
@@ -31,7 +50,17 @@ onMounted(() => {
   hijri.value = `${hijriDate}`; // Set the hijri value
 
   updateTime();
-  setInterval(updateTime, 1000);
+  scheduleMidnightRefresh();
+  updateInterval = setInterval(() => {
+    updateTime();
+    scheduleMidnightRefresh();
+  }, 1000000);
+});
+
+/** Cleanup */
+onUnmounted(() => {
+  if (updateInterval) clearInterval(updateInterval);
+  if (midnightTimeout) clearTimeout(midnightTimeout);
 });
 </script>
 

@@ -102,9 +102,9 @@ const props = defineProps({
         align-items: center;
         background: #f8f9fa;
         border-radius: $border-radius;
-        padding: $padding-medium;
-        font-size: $font-size-xxlarge;
-        margin-bottom: 15px;
+        padding: $padding-small;
+        font-size: $font-size-xxxlarge;
+        margin-bottom: 12px;
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {
@@ -127,7 +127,7 @@ const props = defineProps({
           flex: 1;
           text-align: center;
           color: #4a5568;
-          font-weight: $font-weight-bold;
+          font-weight: $font-weight-extrabold;
 
           &.full-width {
             flex: 2;

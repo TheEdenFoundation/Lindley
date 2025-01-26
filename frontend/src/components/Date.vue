@@ -69,7 +69,7 @@ onUnmounted(() => {
     <div class="header-row">
       <div class="header-section logo-container">
         <img src="../assets/logo.svg" alt="Masjidly" class="logo" />
-        <span>Masjidly</span>
+        <span>Shah Jalal Masjid</span>
       </div>
       <div class="header-section date-container" v-if="date && hijri">
         <span>{{ date }} | {{ hijri }}</span>

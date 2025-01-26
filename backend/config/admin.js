@@ -14,6 +14,4 @@ module.exports = ({ env }) => ({
     nps: env.bool("FLAG_NPS", true),
     promoteEE: env.bool("FLAG_PROMOTE_EE", true),
   },
-  logo: "path/to/your/logo.png",
-  title: "Your Custom Title",
 });

@@ -25,7 +25,7 @@ async function fetchSlideshow() {
     );
 
     newsItems.value = response.data.data.map((item) => ({
-      image: `${import.meta.env.VITE_STRAPI_URL}${item.image.url}`,
+      image: `${item.image.url}`,
     }));
   } catch (err) {
     error.value = err.message;

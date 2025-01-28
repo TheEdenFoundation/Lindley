@@ -1,6 +1,3 @@
-import { ref } from "vue";
-import axios from "axios";
-
 /** Utility: Convert 24-hour time to 12-hour format */
 export function formatTimeTo12Hour(timeStr) {
   if (!timeStr) return "";
@@ -11,7 +8,7 @@ export function formatTimeTo12Hour(timeStr) {
 }
 
 /** Utility: Process prayers */
-export function processPrayers(entry) {
+export function processDailyPrayer(entry) {
   if (!entry) return [];
   const item = entry;
   const prayers = [
@@ -26,6 +23,29 @@ export function processPrayers(entry) {
   return prayers.map((pr) => ({
     Name: pr.name,
     "Start Time (24hr)": item[pr.start]?.slice(0, 5) || "",
+    "Jamat Time (24hr)": item[pr.jamat]?.slice(0, 5) || "",
+    "Start Time": formatTimeTo12Hour(item[pr.start]?.slice(0, 5) || ""),
+    "Jamat Time": formatTimeTo12Hour(item[pr.jamat]?.slice(0, 5) || ""),
+  }));
+}
+
+/** Utility: Process prayers */
+export function processTomorrowsPrayer(entry) {
+  if (!entry) return [];
+  const item = entry;
+  const prayers = [
+    { name: "Fajr", start: "fajr_start", jamat: "fajr_jamat" },
+    { name: "Sunrise", start: "sunrise", jamat: null },
+    { name: "Zuhr", start: "zohar_start", jamat: "zohar_jamat" },
+    { name: "Asr", start: "asr_start", jamat: "asr_jamat" },
+    { name: "Maghrib", start: "maghrib_start", jamat: "maghrib_jamat" },
+    { name: "Isha", start: "isha_start", jamat: "isha_jamat" },
+  ];
+
+  return prayers.map((pr) => ({
+    Name: pr.name,
+    "Start Time (24hr)": item[pr.start]?.slice(0, 5) || "",
+    "Jamat Time (24hr)": item[pr.jamat]?.slice(0, 5) || "",
     "Start Time": formatTimeTo12Hour(item[pr.start]?.slice(0, 5) || ""),
     "Jamat Time": formatTimeTo12Hour(item[pr.jamat]?.slice(0, 5) || ""),
   }));

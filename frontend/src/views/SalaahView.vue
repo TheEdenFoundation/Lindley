@@ -20,7 +20,11 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import NextPrayer from "../components/NextPrayer.vue";
 import TimeTable from "../components/TimeTable.vue";
-import { processPrayers, formatCountdown } from "../utils/salaahUtils.js";
+import {
+  processDailyPrayer,
+  processTomorrowsPrayer,
+  formatCountdown,
+} from "../utils/salaahUtils.js";
 import { getWeekRange, getTomorrowISO } from "../utils/dateUtils.js";
 import { fetchData } from "../utils/apiUtils.js";
 import { processJummah } from "../utils/prayerUtils.js";
@@ -76,7 +80,7 @@ async function fetchTomorrowData() {
       import.meta.env.VITE_STRAPI_URL
     }/api/salaah-times?filters[date][$eq]=${tomorrowISO}&populate=*`;
     const data = await fetchData(url, import.meta.env.VITE_STRAPI_API_TOKEN);
-    tomorrowData.value = processPrayers(data.data?.[0]);
+    tomorrowData.value = processTomorrowsPrayer(data.data?.[0]);
   } catch (err) {
     tomorrowData.value = [];
     error.value = err.message;
@@ -84,39 +88,6 @@ async function fetchTomorrowData() {
   } finally {
     loading.value = false;
   }
-}
-
-/** Build today's final array (+ Jummah) and include tomorrow's data for passed prayers */
-function buildTodaysData() {
-  const now = new Date();
-  const currentSec =
-    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  const todayISO = now.toISOString().split("T")[0];
-
-  const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
-  const fridayRecord = weekData.value.find((r) => {
-    const d = new Date(r?.date || "");
-    return d.getDay() === 5;
-  });
-
-  const dailyPrayers = processPrayers(todaysRecord);
-  const jummahRow = processJummah(fridayRecord);
-
-  const updatedPrayers = dailyPrayers.map((prayer, index) => {
-    const timeStr = prayer["Jamat Time"] || prayer["Start Time"];
-    if (!timeStr) return prayer;
-
-    const [hh, mm] = timeStr.split(":");
-    const prayerSec = parseInt(hh, 10) * 3600 + parseInt(mm, 10) * 60;
-
-    if (prayerSec + 300 < currentSec && tomorrowData.value[index]) {
-      return tomorrowData.value[index];
-    }
-    return prayer;
-  });
-
-  finalArray.value = [...updatedPrayers, jummahRow];
-  findNextAndCurrentPrayer();
 }
 
 /**
@@ -162,6 +133,46 @@ function findNextAndCurrentPrayer() {
   currentPrayerName.value = nextPrayer?.Name || "";
 }
 
+function buildTodaysData() {
+  const now = new Date();
+  const currentSec =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const todayISO = now.toISOString().split("T")[0];
+
+  const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
+  const fridayRecord = weekData.value.find((r) => {
+    const d = new Date(r?.date || "");
+    return d.getDay() === 5;
+  });
+
+  const dailyPrayers = processDailyPrayer(todaysRecord);
+  const jummahRow = processJummah(fridayRecord);
+
+  const updatedPrayers = dailyPrayers.map((prayer, index) => {
+    const timeStr = prayer["Jamat Time (24hr)"] || prayer["Start Time (24hr)"];
+    if (!timeStr) {
+      return prayer; // Skip if no time available
+    }
+
+    // Convert prayer time into seconds (24-hour format)
+    const [hh, mm] = timeStr.split(":").map(Number);
+    const prayerSec = hh * 3600 + mm * 60;
+
+    // Check if the prayer has passed
+    if (prayerSec + 300 < currentSec) {
+      if (tomorrowData.value[index]) {
+        return tomorrowData.value[index];
+      }
+    }
+
+    return prayer; // Return today's data if not passed or no tomorrow data available
+  });
+
+  finalArray.value = [...updatedPrayers, jummahRow];
+
+  findNextAndCurrentPrayer();
+}
+
 /** Schedule a refresh of weekData at midnight */
 function scheduleMidnightRefresh() {
   const now = new Date();
@@ -183,6 +194,7 @@ onMounted(() => {
   scheduleMidnightRefresh();
 
   updateInterval = setInterval(() => {
+    buildTodaysData();
     findNextAndCurrentPrayer();
   }, 1000);
 });

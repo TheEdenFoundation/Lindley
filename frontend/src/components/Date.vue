@@ -29,7 +29,7 @@ function scheduleMidnightRefresh() {
   // set a timeout
   midnightTimeout = setTimeout(() => {
     console.log("It's midnight! Re-fetching time...");
-    uodateTime();
+    updateTime();
     // re-schedule for next midnight
     scheduleMidnightRefresh();
   }, msUntilMidnight);

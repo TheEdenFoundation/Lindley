@@ -8,6 +8,7 @@ const currentTime = ref("");
 let midnightTimeout = null;
 let updateInterval = null;
 
+// Update the current time (every second)
 function updateTime() {
   const now = new Date();
   currentTime.value = now.toLocaleTimeString("en-GB", {
@@ -18,24 +19,8 @@ function updateTime() {
   });
 }
 
-function scheduleMidnightRefresh() {
-  // calc ms until midnight
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  const msUntilMidnight = tomorrow - now;
-
-  // set a timeout
-  midnightTimeout = setTimeout(() => {
-    console.log("It's midnight! Re-fetching time...");
-    updateTime();
-    // re-schedule for next midnight
-    scheduleMidnightRefresh();
-  }, msUntilMidnight);
-}
-
-onMounted(() => {
+// Update the date (both Gregorian and Hijri)
+function updateDate() {
   const now = new Date();
   date.value = now.toLocaleDateString("en-GB", {
     weekday: "long",
@@ -43,18 +28,46 @@ onMounted(() => {
     month: "long",
     year: "numeric",
   });
+  // Set locale to English and calculate the Hijri date
+  moment.locale("en");
+  const hijriDate = moment(now).format("iD iMMMM iYYYY");
+  hijri.value = hijriDate;
+  console.log("Date updated:", date.value, hijri.value);
+}
 
-  // Set locale to English and calculate the Islamic date dynamically
-  moment.locale("en"); // Set locale to English
-  const hijriDate = moment(now).format("iD iMMMM iYYYY"); // Format to get day, month, and year
-  hijri.value = `${hijriDate}`; // Set the hijri value
+// Schedule a refresh at midnight to update the date
+function scheduleMidnightRefresh() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  const msUntilMidnight = tomorrow - now;
+  console.log("Milliseconds until midnight:", msUntilMidnight);
 
+  midnightTimeout = setTimeout(() => {
+    console.log("It's midnight! Updating date and time...");
+    updateDate();
+    updateTime();
+    // Reschedule the refresh for the next midnight
+    scheduleMidnightRefresh();
+  }, msUntilMidnight);
+}
+
+onMounted(() => {
+  // Initial date and time update
+  updateDate();
   updateTime();
   scheduleMidnightRefresh();
+
+  // Update the current time every second
   updateInterval = setInterval(() => {
     updateTime();
-    scheduleMidnightRefresh();
   }, 1000);
+});
+
+onUnmounted(() => {
+  if (updateInterval) clearInterval(updateInterval);
+  if (midnightTimeout) clearTimeout(midnightTimeout);
 });
 </script>
 

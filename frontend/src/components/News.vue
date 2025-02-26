@@ -24,13 +24,9 @@ async function fetchSlideshow() {
       }
     );
 
-    console.log("Slideshow data:", response.data);
-
     newsItems.value = response.data.data.map((item) => ({
-      image: `${import.meta.env.VITE_STRAPI_URL}${item.image.url}`,
+      image: `${item.image.url}`,
     }));
-
-    console.log("Slideshow images fetched:", newsItems.value);
   } catch (err) {
     error.value = err.message;
     console.error("Error fetching slideshow data:", err);

@@ -168,7 +168,13 @@ function buildTodaysData() {
     return prayer; // Return today's data if not passed or no tomorrow data available
   });
 
-  finalArray.value = [...updatedPrayers, jummahRow];
+  // Exclude Sehri from the final array
+  finalArray.value = updatedPrayers.filter(
+    (prayer) => prayer.Name !== "Sehri End"
+  ); // Exclude Sehri
+
+  // Add Jummah row to the final array
+  finalArray.value.push(jummahRow);
 
   findNextAndCurrentPrayer();
 }

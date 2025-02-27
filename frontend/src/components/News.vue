@@ -12,9 +12,8 @@ const currentBackgroundColor = ref("");
 const loading = ref(true);
 const error = ref(null);
 const isRamadan = computed(() => {
-  // const hijriDate = moment().format("iMMMM");
-  // return hijriDate === "Ramadan";
-  return true; // For testing
+  const hijriDate = moment().format("iMMMM");
+  return hijriDate === "Ramadan";
 });
 
 async function fetchSlideshow() {

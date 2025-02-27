@@ -125,7 +125,7 @@ header {
     }
 
     span {
-      font-size: $font-size-large;
+      font-size: $font-size-xlarge;
       font-weight: $font-weight-bold;
       color: $color-accent;
       margin: 0;
@@ -138,9 +138,10 @@ header {
 
   .date-container {
     justify-content: center;
+    flex-grow: 2;
 
     span {
-      font-size: $font-size-large;
+      font-size: $font-size-xlarge;
       color: $color-secondary;
       font-weight: $font-weight-bold;
     }
@@ -150,7 +151,7 @@ header {
     justify-content: flex-end;
 
     .time {
-      font-size: 2.5rem;
+      font-size: $font-size-xxxlarge;
       font-weight: $font-weight-bold;
       color: $color-accent;
     }
@@ -175,7 +176,7 @@ header {
     }
 
     .date-container span {
-      font-size: $font-size-small;
+      font-size: $font-size-medium;
     }
 
     .time-container .time {

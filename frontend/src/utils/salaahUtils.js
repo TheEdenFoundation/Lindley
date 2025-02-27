@@ -14,6 +14,7 @@ export function processDailyPrayer(entry) {
   const prayers = [
     { name: "Fajr", start: "fajr_start", jamat: "fajr_jamat" },
     { name: "Sunrise", start: "sunrise", jamat: null },
+    { name: "Sehri End", start: "sehri_end", jamat: null },
     { name: "Zuhr", start: "zohar_start", jamat: "zohar_jamat" },
     { name: "Asr", start: "asr_start", jamat: "asr_jamat" },
     { name: "Maghrib", start: "maghrib_start", jamat: "maghrib_jamat" },
@@ -36,6 +37,7 @@ export function processTomorrowsPrayer(entry) {
   const prayers = [
     { name: "Fajr", start: "fajr_start", jamat: "fajr_jamat" },
     { name: "Sunrise", start: "sunrise", jamat: null },
+    { name: "Sehri End", start: "sehri_end", jamat: null },
     { name: "Zuhr", start: "zohar_start", jamat: "zohar_jamat" },
     { name: "Asr", start: "asr_start", jamat: "asr_jamat" },
     { name: "Maghrib", start: "maghrib_start", jamat: "maghrib_jamat" },

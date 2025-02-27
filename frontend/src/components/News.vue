@@ -1,14 +1,20 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay } from "swiper/modules";
+import RamadanTimes from "../components/RamadanTimes.vue";
 import "swiper/swiper-bundle.css";
 import axios from "axios";
+import moment from "moment";
 
 const newsItems = ref([]);
 const currentBackgroundColor = ref("");
 const loading = ref(true);
 const error = ref(null);
+const isRamadan = computed(() => {
+  const hijriDate = moment().format("iMMMM");
+  return hijriDate === "Ramadan";
+});
 
 async function fetchSlideshow() {
   loading.value = true;
@@ -63,6 +69,7 @@ onMounted(fetchSlideshow);
     <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
     <Swiper
+      :class="{ 'ramadan-news': isRamadan }"
       v-else-if="newsItems.length"
       v-bind="swiperConfig"
       @slideChange="onSlideChange"
@@ -75,9 +82,10 @@ onMounted(fetchSlideshow);
         </div>
       </SwiperSlide>
     </Swiper>
-    <div v-else class="skeleton-news">
+    <div v-else :class="{ 'ramadan-news': isRamadan }" class="skeleton-news">
       <div class="skeleton-image"></div>
     </div>
+    <RamadanTimes />
   </div>
 </template>
 
@@ -89,6 +97,10 @@ onMounted(fetchSlideshow);
   position: relative;
   border-radius: $border-radius;
   overflow: hidden;
+
+  .ramadan-news {
+    height: 85%;
+  }
 
   .swiper {
     height: 100%;

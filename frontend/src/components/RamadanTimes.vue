@@ -69,9 +69,6 @@ const updateSehriTime = async () => {
   const maghribTime = new Date();
   maghribTime.setHours(iftar[0], iftar[1], 0, 0);
 
-  console.log("Now:", now);
-  console.log("Maghrib Date:", maghribTime);
-
   if (now >= maghribTime) {
     const tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);
@@ -95,7 +92,6 @@ const updateSehriTime = async () => {
 
       if (tomorrowRecord) {
         const prayers = processDailyPrayer(tomorrowRecord);
-        console.log("Processed tomorrow's prayers:", prayers);
 
         const tomorrowSehriPrayer = prayers.find(
           (prayer) => prayer.Name === "Sehri End"
@@ -105,8 +101,6 @@ const updateSehriTime = async () => {
           : "";
         sehriEndTime.value = tomorrowSehriEndTime.value;
 
-        console.log("Tomorrow's Sehri End Time:", tomorrowSehriEndTime.value);
-
         const tomorrowMaghribPrayer = prayers.find(
           (prayer) => prayer.Name === "Maghrib"
         );
@@ -114,8 +108,6 @@ const updateSehriTime = async () => {
           ? tomorrowMaghribPrayer["Jamat Time (24hr)"]
           : ""; // Set tomorrow's Iftar time
         iftarTime.value = tomorrowIftarTime.value;
-
-        console.log("Tomorrow's Iftar Time:", tomorrowIftarTime.value);
       }
     } catch (error) {
       console.error("Error fetching tomorrow's Sehri time:", error);

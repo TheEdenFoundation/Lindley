@@ -32,7 +32,6 @@ function updateDate() {
   moment.locale("en");
   const hijriDate = moment(now).format("iD iMMMM iYYYY");
   hijri.value = hijriDate;
-  console.log("Date updated:", date.value, hijri.value);
 }
 
 // Schedule a refresh at midnight to update the date
@@ -42,10 +41,8 @@ function scheduleMidnightRefresh() {
   tomorrow.setDate(now.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
   const msUntilMidnight = tomorrow - now;
-  console.log("Milliseconds until midnight:", msUntilMidnight);
 
   midnightTimeout = setTimeout(() => {
-    console.log("It's midnight! Updating date and time...");
     updateDate();
     updateTime();
     // Reschedule the refresh for the next midnight

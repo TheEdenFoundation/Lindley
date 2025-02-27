@@ -21,8 +21,9 @@ const tomorrowSehriEndTime = ref("");
 const tomorrowIftarTime = ref("");
 
 const isRamadan = computed(() => {
-  const hijriDate = moment().format("iMMMM");
-  return hijriDate === "Ramadan";
+  // const hijriDate = moment().format("iMMMM");
+  // return hijriDate === "Ramadan";
+  return true; // For testing
 });
 
 // Fetch actual Sehri and Iftar times from your prayer data

@@ -75,8 +75,8 @@ onUnmounted(() => {
   <header>
     <div class="header-row">
       <div class="header-section logo-container">
-        <img src="../assets/logo.svg" alt="Masjidly" class="logo" />
-        <span>Masjidly</span>
+        <img src="../assets/logo-full.svg" alt="Masjidly" class="logo" />
+        <span></span>
       </div>
       <div class="header-section date-container" v-if="date && hijri">
         <span>{{ date }} | {{ hijri }}</span>
@@ -120,7 +120,7 @@ header {
     gap: 16px;
 
     img {
-      height: 100px;
+      height: 70px;
       width: auto;
     }
 

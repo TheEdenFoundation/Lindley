@@ -12,8 +12,9 @@ const currentBackgroundColor = ref("");
 const loading = ref(true);
 const error = ref(null);
 const isRamadan = computed(() => {
-  const hijriDate = moment().format("iMMMM");
-  return hijriDate === "Ramadan";
+  // const hijriDate = moment().format("iMMMM");
+  // return hijriDate === "Ramadan";
+  return true; // For testing
 });
 
 async function fetchSlideshow() {
@@ -98,10 +99,6 @@ onMounted(fetchSlideshow);
   border-radius: $border-radius;
   overflow: hidden;
 
-  .ramadan-news {
-    height: 85%;
-  }
-
   .swiper {
     height: 100%;
   }
@@ -141,6 +138,10 @@ onMounted(fetchSlideshow);
     .news-item {
       padding: $padding-small 0;
     }
+  }
+
+  .ramadan-news {
+    height: 85%;
   }
 }
 

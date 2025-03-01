@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import moment from "moment-hijri"; // Import the moment-hijri library
+import moment from "moment-hijri";
 
 const date = ref("");
 const hijri = ref("");
@@ -51,12 +51,9 @@ function scheduleMidnightRefresh() {
 }
 
 onMounted(() => {
-  // Initial date and time update
   updateDate();
   updateTime();
   scheduleMidnightRefresh();
-
-  // Update the current time every second
   updateInterval = setInterval(() => {
     updateTime();
   }, 1000);

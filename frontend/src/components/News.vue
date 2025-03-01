@@ -5,16 +5,22 @@ import { Autoplay } from "swiper/modules";
 import RamadanTimes from "../components/RamadanTimes.vue";
 import "swiper/swiper-bundle.css";
 import axios from "axios";
-import moment from "moment";
+import moment from "moment-hijri";
 
 const newsItems = ref([]);
 const currentBackgroundColor = ref("");
 const loading = ref(true);
 const error = ref(null);
-const isRamadan = computed(() => {
+const isRamadan = ref(false);
+
+const checkRamadan = () => {
+  moment.locale("en");
   const hijriDate = moment().format("iMMMM");
-  return hijriDate === "Ramadan";
-});
+  isRamadan.value = hijriDate === "Ramadhan";
+};
+checkRamadan();
+
+setInterval(checkRamadan, 1000);
 
 async function fetchSlideshow() {
   loading.value = true;

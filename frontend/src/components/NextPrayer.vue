@@ -1,3 +1,12 @@
+<script setup>
+import { defineProps } from "vue";
+
+const props = defineProps({
+  nextName: { type: String, default: "No upcoming prayers" },
+  nextCountdown: { type: String, default: "" },
+});
+</script>
+
 <template>
   <div class="next-prayer">
     <h2 class="next-prayer__title">
@@ -9,15 +18,6 @@
     </h2>
   </div>
 </template>
-
-<script setup>
-import { defineProps } from "vue";
-
-const props = defineProps({
-  nextName: { type: String, default: "No upcoming prayers" },
-  nextCountdown: { type: String, default: "" },
-});
-</script>
 
 <style scoped lang="scss">
 @import "../styles/stylesetter";

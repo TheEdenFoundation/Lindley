@@ -1,15 +1,5 @@
-<template>
-  <div v-if="isRamadan" class="ramadan-times">
-    <h3>Ramadan Timings</h3>
-    <div class="timings">
-      <p>Sehri End Time: {{ sehriEndTime }}</p>
-      <p>Iftar Time: {{ iftarTime }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import moment from "moment-hijri";
 import { processDailyPrayer } from "../utils/salaahUtils.js";
 import { fetchData } from "../utils/apiUtils.js";
@@ -20,14 +10,9 @@ const iftarTime = ref("");
 const tomorrowSehriEndTime = ref("");
 const tomorrowIftarTime = ref("");
 
-const isRamadan = computed(() => {
-  const hijriDate = moment().format("iMMMM");
-  return hijriDate === "Ramadan";
-});
-
-// Fetch actual Sehri and Iftar times from your prayer data
+// Fetch actual Sehri and Iftar times
 const fetchRamadanTimes = async () => {
-  const { startISO, endISO } = getWeekRange(); // Get the current week's date range
+  const { startISO, endISO } = getWeekRange();
   const queryParams = new URLSearchParams({
     "filters[date][$gte]": startISO,
     "filters[date][$lte]": endISO,
@@ -50,20 +35,16 @@ const fetchRamadanTimes = async () => {
       const sehriPrayer = prayers.find((prayer) => prayer.Name === "Sehri End");
       const maghribPrayer = prayers.find((prayer) => prayer.Name === "Maghrib");
 
-      sehriEndTime.value = sehriPrayer
-        ? sehriPrayer["Start Time (24hr)"]
-        : "N/A"; // Set Sehri end time
-      iftarTime.value = maghribPrayer
-        ? maghribPrayer["Jamat Time (24hr)"]
-        : "N/A"; // Set Iftar time
+      sehriEndTime.value = sehriPrayer ? sehriPrayer["Start Time (24hr)"] : "";
+      iftarTime.value = maghribPrayer ? maghribPrayer["Jamat Time (24hr)"] : "";
     }
   } catch (error) {
     console.error("Error fetching Ramadan times:", error);
   }
 };
 
-// Update Sehri time to tomorrow's after Maghrib
-const updateSehriTime = async () => {
+// Update Ramadan time to tomorrow's after Maghrib
+const updateRamadanTimes = async () => {
   const now = new Date();
   const iftar = iftarTime.value.split(":");
   const maghribTime = new Date();
@@ -106,7 +87,7 @@ const updateSehriTime = async () => {
         );
         tomorrowIftarTime.value = tomorrowMaghribPrayer
           ? tomorrowMaghribPrayer["Jamat Time (24hr)"]
-          : ""; // Set tomorrow's Iftar time
+          : "";
         iftarTime.value = tomorrowIftarTime.value;
       }
     } catch (error) {
@@ -115,13 +96,22 @@ const updateSehriTime = async () => {
   }
 };
 
-// Fetch the times when the component is mounted
 onMounted(() => {
   fetchRamadanTimes();
-  const interval = setInterval(updateSehriTime, 1000); // Check every second
-  onUnmounted(() => clearInterval(interval)); // Clear interval on component unmount
+  const interval = setInterval(updateRamadanTimes, 1000);
+  onUnmounted(() => clearInterval(interval));
 });
 </script>
+
+<template>
+  <div class="ramadan-times">
+    <h3>Ramadan Timings</h3>
+    <div class="timings">
+      <p>Sehri: {{ sehriEndTime }}</p>
+      <p>Iftar: {{ iftarTime }}</p>
+    </div>
+  </div>
+</template>
 
 <style scoped lang="scss">
 @import "../styles/stylesetter";

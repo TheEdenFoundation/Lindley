@@ -1,21 +1,3 @@
-<template>
-  <section class="salaah-view">
-    <!-- Next Prayer + Timetable (unchanged) -->
-    <NextPrayer
-      :nextName="nextPrayerName"
-      :nextCountdown="nextPrayerCountdown"
-    />
-    <TimeTable
-      :prayers="finalArray"
-      :activeName="currentPrayerName"
-      :tomorrowData="tomorrowData"
-    />
-
-    <div v-if="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
-  </section>
-</template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import NextPrayer from "../components/NextPrayer.vue";
@@ -151,7 +133,7 @@ function buildTodaysData() {
   const updatedPrayers = dailyPrayers.map((prayer, index) => {
     const timeStr = prayer["Jamat Time (24hr)"] || prayer["Start Time (24hr)"];
     if (!timeStr) {
-      return prayer; // Skip if no time available
+      return prayer;
     }
 
     // Convert prayer time into seconds (24-hour format)
@@ -165,15 +147,13 @@ function buildTodaysData() {
       }
     }
 
-    return prayer; // Return today's data if not passed or no tomorrow data available
+    return prayer;
   });
 
-  // Exclude Sehri from the final array
   finalArray.value = updatedPrayers.filter(
     (prayer) => prayer.Name !== "Sehri End"
-  ); // Exclude Sehri
+  );
 
-  // Add Jummah row to the final array
   finalArray.value.push(jummahRow);
 
   findNextAndCurrentPrayer();
@@ -210,6 +190,23 @@ onUnmounted(() => {
   if (midnightTimeout) clearTimeout(midnightTimeout);
 });
 </script>
+
+<template>
+  <section class="salaah-view">
+    <NextPrayer
+      :nextName="nextPrayerName"
+      :nextCountdown="nextPrayerCountdown"
+    />
+    <TimeTable
+      :prayers="finalArray"
+      :activeName="currentPrayerName"
+      :tomorrowData="tomorrowData"
+    />
+
+    <div v-if="loading">Loading...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+  </section>
+</template>
 
 <style scoped>
 .error {

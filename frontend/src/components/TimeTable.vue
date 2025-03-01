@@ -1,3 +1,12 @@
+<script setup>
+import { defineProps } from "vue";
+
+const props = defineProps({
+  prayers: { type: Array, default: () => [] },
+  tomorrowData: { type: Array, default: () => [] },
+});
+</script>
+
 <template>
   <div class="timetable-container">
     <div v-if="prayers.length" class="timetable">
@@ -43,15 +52,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { defineProps } from "vue";
-
-const props = defineProps({
-  prayers: { type: Array, default: () => [] },
-  tomorrowData: { type: Array, default: () => [] },
-});
-</script>
 
 <style lang="scss" scoped>
 @import "../styles/stylesetter";

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import moment from "moment-hijri";
 import { processDailyPrayer } from "../utils/salaahUtils.js";
 import { fetchData } from "../utils/apiUtils.js";
@@ -7,8 +7,23 @@ import { getWeekRange } from "../utils/dateUtils.js";
 
 const sehriEndTime = ref("");
 const iftarTime = ref("");
+const sehriLabel = ref("Sehri Today"); // Default label for today
+const iftarLabel = ref("Iftar Today"); // Default label for today
 const tomorrowSehriEndTime = ref("");
 const tomorrowIftarTime = ref("");
+
+// Convert 24hr time to 12hr format with AM/PM
+const convertTo12Hour = (time24) => {
+  if (!time24 || time24.trim() === "") return "";
+
+  const [hours, minutes] = time24.split(":").map(Number);
+
+  if (isNaN(hours) || isNaN(minutes)) return "";
+
+  const hours12 = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+
+  return `${hours12}:${minutes.toString().padStart(2, "0")}`;
+};
 
 // Fetch actual Sehri and Iftar times
 const fetchRamadanTimes = async () => {
@@ -35,8 +50,59 @@ const fetchRamadanTimes = async () => {
       const sehriPrayer = prayers.find((prayer) => prayer.Name === "Sehri End");
       const maghribPrayer = prayers.find((prayer) => prayer.Name === "Maghrib");
 
-      sehriEndTime.value = sehriPrayer ? sehriPrayer["Start Time (24hr)"] : "";
-      iftarTime.value = maghribPrayer ? maghribPrayer["Jamat Time (24hr)"] : "";
+      // Store the 24-hour format for calculations
+      const sehri24 = sehriPrayer ? sehriPrayer["Start Time (24hr)"] : "";
+      const iftar24 = maghribPrayer ? maghribPrayer["Jamat Time (24hr)"] : "";
+
+      // Convert to 12-hour format for display
+      sehriEndTime.value = convertTo12Hour(sehri24);
+      iftarTime.value = convertTo12Hour(iftar24);
+
+      // Set the labels for today
+      sehriLabel.value = "Sehri Today";
+      iftarLabel.value = "Iftar Today";
+    }
+
+    // Fetch tomorrow's prayers
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString().split("T")[0];
+
+    const tomorrowQueryParams = new URLSearchParams({
+      "filters[date][$gte]": tomorrowISO,
+      "filters[date][$lte]": tomorrowISO,
+      populate: "*",
+    });
+    const tomorrowUrl = `${
+      import.meta.env.VITE_STRAPI_URL
+    }/api/salaah-times?${tomorrowQueryParams}`;
+
+    const tomorrowData = await fetchData(
+      tomorrowUrl,
+      import.meta.env.VITE_STRAPI_API_TOKEN
+    );
+    const tomorrowRecord = tomorrowData.data.find(
+      (record) => record.date === tomorrowISO
+    );
+
+    if (tomorrowRecord) {
+      const tomorrowPrayers = processDailyPrayer(tomorrowRecord);
+
+      const tomorrowSehriPrayer = tomorrowPrayers.find(
+        (prayer) => prayer.Name === "Sehri End"
+      );
+      const tomorrowSehri24 = tomorrowSehriPrayer
+        ? tomorrowSehriPrayer["Start Time (24hr)"]
+        : "";
+      tomorrowSehriEndTime.value = convertTo12Hour(tomorrowSehri24);
+
+      const tomorrowMaghribPrayer = tomorrowPrayers.find(
+        (prayer) => prayer.Name === "Maghrib"
+      );
+      const tomorrowIftar24 = tomorrowMaghribPrayer
+        ? tomorrowMaghribPrayer["Jamat Time (24hr)"]
+        : "";
+      tomorrowIftarTime.value = convertTo12Hour(tomorrowIftar24);
     }
   } catch (error) {
     console.error("Error fetching Ramadan times:", error);
@@ -46,9 +112,24 @@ const fetchRamadanTimes = async () => {
 // Update Ramadan time to tomorrow's after Maghrib
 const updateRamadanTimes = async () => {
   const now = new Date();
-  const iftar = iftarTime.value.split(":");
+
+  // Only proceed if we have a valid Iftar time
+  if (!iftarTime.value) return;
+
+  // Extract the hours and minutes from the 12-hour format
+  const iftarMatch = iftarTime.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!iftarMatch) return;
+
+  let hours = parseInt(iftarMatch[1]);
+  const minutes = parseInt(iftarMatch[2]);
+  const period = iftarMatch[3].toUpperCase();
+
+  // Convert to 24-hour format for comparison
+  if (period === "PM" && hours < 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
   const maghribTime = new Date();
-  maghribTime.setHours(iftar[0], iftar[1], 0, 0);
+  maghribTime.setHours(hours, minutes, 0, 0);
 
   if (now >= maghribTime) {
     const tomorrow = new Date();
@@ -77,18 +158,28 @@ const updateRamadanTimes = async () => {
         const tomorrowSehriPrayer = prayers.find(
           (prayer) => prayer.Name === "Sehri End"
         );
-        tomorrowSehriEndTime.value = tomorrowSehriPrayer
+        const tomorrowSehri24 = tomorrowSehriPrayer
           ? tomorrowSehriPrayer["Start Time (24hr)"]
           : "";
-        sehriEndTime.value = tomorrowSehriEndTime.value;
 
         const tomorrowMaghribPrayer = prayers.find(
           (prayer) => prayer.Name === "Maghrib"
         );
-        tomorrowIftarTime.value = tomorrowMaghribPrayer
+        const tomorrowIftar24 = tomorrowMaghribPrayer
           ? tomorrowMaghribPrayer["Jamat Time (24hr)"]
           : "";
-        iftarTime.value = tomorrowIftarTime.value;
+
+        // Only update the displayed times and labels if we have valid data for tomorrow
+        if (tomorrowSehri24 && tomorrowIftar24) {
+          tomorrowSehriEndTime.value = convertTo12Hour(tomorrowSehri24);
+          sehriEndTime.value = convertTo12Hour(tomorrowSehri24);
+
+          tomorrowIftarTime.value = convertTo12Hour(tomorrowIftar24);
+          iftarTime.value = convertTo12Hour(tomorrowIftar24);
+
+          sehriLabel.value = "Sehri Tomorrow";
+          iftarLabel.value = "Iftar Tomorrow";
+        }
       }
     } catch (error) {
       console.error("Error fetching tomorrow's Sehri time:", error);
@@ -107,8 +198,8 @@ onMounted(() => {
   <div class="ramadan-times">
     <h3>Ramadan Timings</h3>
     <div class="timings">
-      <p>Sehri: {{ sehriEndTime }}</p>
-      <p>Iftar: {{ iftarTime }}</p>
+      <p>{{ sehriLabel }}: {{ sehriEndTime }}</p>
+      <p>{{ iftarLabel }}: {{ iftarTime }}</p>
     </div>
   </div>
 </template>

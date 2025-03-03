@@ -56,7 +56,7 @@ const fetchRamadanTimes = async (forTomorrow = false) => {
         iftarPrayer?.["Jamat Time (24hr)"] || ""
       );
 
-      sehriLabel.value = forTomorrow ? "Sehri End Tomorrow" : "Sehri End Today";
+      sehriLabel.value = forTomorrow ? "Sehri Tomorrow" : "Sehri Today";
       iftarLabel.value = forTomorrow ? "Iftar Tomorrow" : "Iftar Today";
 
       // Force a check to see if we need to switch to tomorrow
@@ -82,6 +82,7 @@ const updateRamadanTimes = () => {
   }
   const match = iftarTime.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!match) {
+    console.error("Invalid Iftar time format:", iftarTime.value);
     return;
   }
 
@@ -152,8 +153,8 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  font-size: $font-size-xxlarge;
-  font-weight: $font-weight-bold;
+  font-size: $font-size-xlarge;
+  font-weight: $font-weight-extra-bold;
 }
 
 .timings p {

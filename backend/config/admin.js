@@ -10,6 +10,10 @@ module.exports = ({ env }) => ({
       salt: env("TRANSFER_TOKEN_SALT"),
     },
   },
+  forgotPassword: {
+    from: 'salaam@masjidly.co.uk',
+    replyTo: 'salaam@masjidly.co.uk',
+  },
   flags: {
     nps: env.bool("FLAG_NPS", true),
     promoteEE: env.bool("FLAG_PROMOTE_EE", true),

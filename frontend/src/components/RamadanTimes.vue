@@ -9,7 +9,7 @@ import { fetchData } from "../utils/apiUtils.js";
 
 const sehriEndTime = ref("");
 const iftarTime = ref("");
-const sehriLabel = ref("Sehri Today");
+const sehriLabel = ref("Sehri End Today");
 const iftarLabel = ref("Iftar Today");
 let isUpdatedToTomorrow = false;
 
@@ -56,7 +56,7 @@ const fetchRamadanTimes = async (forTomorrow = false) => {
         iftarPrayer?.["Jamat Time (24hr)"] || ""
       );
 
-      sehriLabel.value = forTomorrow ? "Sehri Tomorrow" : "Sehri Today";
+      sehriLabel.value = forTomorrow ? "Sehri End Tomorrow" : "Sehri End Today";
       iftarLabel.value = forTomorrow ? "Iftar Tomorrow" : "Iftar Today";
 
       // Force a check to see if we need to switch to tomorrow

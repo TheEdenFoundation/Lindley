@@ -1,0 +1,37 @@
+// Breakpoints
+$breakpoint-mobile: 600px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+$breakpoint-large: 1200px;
+
+// Colors
+$color-background: #f5f5f5;
+$color-primary: #ffffff;
+$color-secondary: #666;
+$color-accent: #2d3748;
+$color-jummah-bg: #fff3cd;
+$color-jummah-text: #856404;
+
+// Additional Colors
+$color-success: #c6f6d5; // Light green for next prayer
+$color-error: #f56565; // Example error color
+$color-info: #63b3ed; // Example info color
+
+// Font Sizes
+$font-size-small: 1rem;
+$font-size-medium: 1.2rem;
+$font-size-large: 1.6rem;
+$font-size-xlarge: 2rem;
+$font-size-xxlarge: 2.2rem;
+$font-size-xxxlarge: 2.7rem;
+
+// Font Weights
+$font-weight-normal: 400;
+$font-weight-bold: 600;
+$font-weight-extra-bold: 700;
+
+// Other Variables
+$border-radius: 12px;
+$padding-small: 10px;
+$padding-medium: 16px;
+$padding-large: 24px;

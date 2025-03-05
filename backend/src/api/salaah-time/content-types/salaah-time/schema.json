@@ -1,0 +1,70 @@
+{
+  "kind": "collectionType",
+  "collectionName": "salaah_times",
+  "info": {
+    "singularName": "salaah-time",
+    "pluralName": "salaah-times",
+    "displayName": "Salaah Time",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "date": {
+      "type": "date"
+    },
+    "islamic_month": {
+      "type": "string"
+    },
+    "islamic_date": {
+      "type": "integer"
+    },
+    "islamic_year": {
+      "type": "integer"
+    },
+    "sehri_end": {
+      "type": "time"
+    },
+    "fajr_start": {
+      "type": "time"
+    },
+    "fajr_jamat": {
+      "type": "time"
+    },
+    "sunrise": {
+      "type": "time"
+    },
+    "zohar_start": {
+      "type": "time"
+    },
+    "zohar_jamat": {
+      "type": "time"
+    },
+    "asr_start": {
+      "type": "time"
+    },
+    "asr_jamat": {
+      "type": "time"
+    },
+    "maghrib_start": {
+      "type": "time"
+    },
+    "maghrib_jamat": {
+      "type": "time"
+    },
+    "isha_start": {
+      "type": "time"
+    },
+    "isha_jamat": {
+      "type": "time"
+    },
+    "jummah_1": {
+      "type": "time"
+    },
+    "jummah_2": {
+      "type": "time"
+    }
+  }
+}

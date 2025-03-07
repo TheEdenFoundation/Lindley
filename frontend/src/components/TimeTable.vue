@@ -104,7 +104,6 @@ const props = defineProps({
         border-radius: $border-radius;
         padding: $padding-small;
         font-size: $font-size-xxxlarge;
-        margin-bottom: 12px;
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {

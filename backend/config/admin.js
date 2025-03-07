@@ -1,3 +1,12 @@
+const fs = require("fs");
+const path = require("path");
+
+// Read the HTML template file
+const forgotPasswordTemplate = fs.readFileSync(
+  path.join(__dirname, "../templates/emails/forgot-password.html"),
+  "utf8"
+);
+
 module.exports = ({ env }) => ({
   auth: {
     secret: env("ADMIN_JWT_SECRET"),
@@ -14,33 +23,9 @@ module.exports = ({ env }) => ({
     from: "TEF Lindley <salaam@masjidly.co.uk>",
     replyTo: "TEF Lindley <salaam@masjidly.co.uk>",
     emailTemplate: {
-      subject: "Reset password for {{ USER.firstname }}",
-      text: `Salaam {{ USER.firstname }},
-        
-We received a request to reset your password for the admin panel.
-        
-Please use the following link to reset your password:
-{{ URL }}?code={{ TOKEN }}
-        
-This link will expire in 24 hours.
-        
-If you didn't request this, please ignore this email.
-        
-Thanks,
-The Eden Foundation`,
-      html: `<p>Salaam {{ USER.firstname }},</p>
-        
-<p>We received a request to reset your password for the admin panel.</p>
-        
-<p>Please use the following link to reset your password:<br>
-<a href="{{ URL }}?code={{ TOKEN }}">{{ URL }}?code={{ TOKEN }}</a></p>
-        
-<p>This link will expire in 24 hours.</p>
-        
-<p>If you didn't request this, please ignore this email.</p>
-        
-<p>Thanks,<br>
-The Eden Foundation</p>`,
+      subject: "TEF Lindley - Reset Password",
+      html: forgotPasswordTemplate,
+      text: `Reset your password by clicking this link: {{ URL }}?code={{ TOKEN }}`,
     },
   },
   flags: {

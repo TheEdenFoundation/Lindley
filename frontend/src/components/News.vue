@@ -146,7 +146,7 @@ onMounted(fetchSlideshow);
   }
 
   .ramadan-news {
-    height: 85%;
+    height: 90%;
   }
 }
 

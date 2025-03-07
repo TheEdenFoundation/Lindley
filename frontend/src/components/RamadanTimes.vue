@@ -126,7 +126,6 @@ onMounted(() => {
 
 <template>
   <div class="ramadan-times">
-    <h3>Ramadhan Timings</h3>
     <div class="timings">
       <p>{{ sehriLabel }}: {{ sehriEndTime }}</p>
       <p>{{ iftarLabel }}: {{ iftarTime }}</p>

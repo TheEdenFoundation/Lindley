@@ -14,13 +14,13 @@ module.exports = ({ env }) => ({
     from: "TEF Lindley <salaam@masjidly.co.uk>",
     replyTo: "TEF Lindley <salaam@masjidly.co.uk>",
     emailTemplate: {
-      subject: "Reset password for <%= USER.firstname %>",
-      text: `Salaam <%= USER.firstname %>,
+      subject: "Reset password for {{ USER.firstname }}",
+      text: `Salaam {{ USER.firstname }},
         
 We received a request to reset your password for the admin panel.
         
 Please use the following link to reset your password:
-<%= URL %>?code=<%= TOKEN %>
+{{ URL }}?code={{ TOKEN }}
         
 This link will expire in 24 hours.
         
@@ -28,12 +28,12 @@ If you didn't request this, please ignore this email.
         
 Thanks,
 The Eden Foundation`,
-      html: `<p>Salaam <%= USER.firstname %>,</p>
+      html: `<p>Salaam {{ USER.firstname }},</p>
         
 <p>We received a request to reset your password for the admin panel.</p>
         
 <p>Please use the following link to reset your password:<br>
-<a href="<%= URL %>?code=<%= TOKEN %>"><%= URL %>?code=<%= TOKEN %></a></p>
+<a href="{{ URL }}?code={{ TOKEN }}">{{ URL }}?code={{ TOKEN }}</a></p>
         
 <p>This link will expire in 24 hours.</p>
         

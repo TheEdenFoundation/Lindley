@@ -22,7 +22,7 @@ module.exports = ({ env }) => ({
       },
       settings: {
         defaultFrom: "salaam@masjidly.co.uk",
-        defaultReplyTo: "salaam@masjidly.co.uk",
+        defaultReplyTo: "Tsalaam@masjidly.co.uk",
       },
     },
   },

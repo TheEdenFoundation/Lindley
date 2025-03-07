@@ -1,12 +1,3 @@
-const fs = require("fs");
-const path = require("path");
-
-// Read the HTML template file
-const forgotPasswordTemplate = fs.readFileSync(
-  path.join(__dirname, "../templates/emails/forgot-password.html"),
-  "utf8"
-);
-
 module.exports = ({ env }) => ({
   auth: {
     secret: env("ADMIN_JWT_SECRET"),
@@ -20,12 +11,10 @@ module.exports = ({ env }) => ({
     },
   },
   forgotPassword: {
-    from: "salaam@masjidly.co.uk",
-    replyTo: "salaam@masjidly.co.uk",
+    from: "Masjidly <salaam@masjidly.co.uk>",
+    replyTo: "Masjidly <salaam@masjidly.co.uk>",
     emailTemplate: {
       subject: "Masjidly - Reset Password",
-      html: forgotPasswordTemplate,
-      text: `Reset your password by clicking this link: <%= URL %>?code=<%= TOKEN %>`,
     },
   },
   flags: {

@@ -60,7 +60,7 @@ body {
     flex-direction: column;
     gap: 16px;
     padding: 24px;
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 6rem);
     overflow: hidden; /* Prevent overflow to avoid extra space */
 
     /* Adjust to ensure both components are visible */

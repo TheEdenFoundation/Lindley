@@ -20,8 +20,8 @@ module.exports = ({ env }) => ({
     },
   },
   forgotPassword: {
-    from: "TEF Lindley <salaam@masjidly.co.uk>",
-    replyTo: "TEF Lindley <salaam@masjidly.co.uk>",
+    from: "salaam@masjidly.co.uk",
+    replyTo: "salaam@masjidly.co.uk",
     emailTemplate: {
       subject: "TEF Lindley - Reset Password",
       html: forgotPasswordTemplate,

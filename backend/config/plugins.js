@@ -21,8 +21,8 @@ module.exports = ({ env }) => ({
         apiKey: env("SENDGRID_API_KEY"),
       },
       settings: {
-        defaultFrom: "TEF Lindley <salaam@masjidly.co.uk>",
-        defaultReplyTo: "TEF Lindley <salaam@masjidly.co.uk>",
+        defaultFrom: "salaam@masjidly.co.uk",
+        defaultReplyTo: "salaam@masjidly.co.uk",
       },
     },
   },

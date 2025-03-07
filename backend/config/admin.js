@@ -25,7 +25,7 @@ module.exports = ({ env }) => ({
     emailTemplate: {
       subject: "TEF Lindley - Reset Password",
       html: forgotPasswordTemplate,
-      text: `Reset your password by clicking this link: {{ URL }}?code={{ TOKEN }}`,
+      text: `Reset your password by clicking this link: <%= URL %>?code=<%= TOKEN %>`,
     },
   },
   flags: {

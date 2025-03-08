@@ -147,7 +147,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  font-size: $font-size-xxxxlarge;
+  font-size: $font-size-xxxlarge;
   font-weight: $font-weight-extra-bold;
 }
 

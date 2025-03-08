@@ -135,9 +135,9 @@ header {
     flex-grow: 2;
 
     span {
-      font-size: $font-size-xlarge;
+      font-size: $font-size-xxlarge;
       color: $color-secondary;
-      font-weight: $font-weight-bold;
+      font-weight: $font-weight-extra-bold;
     }
   }
 
@@ -145,8 +145,8 @@ header {
     justify-content: flex-end;
 
     .time {
-      font-size: $font-size-xxxlarge;
-      font-weight: $font-weight-bold;
+      font-size: $font-size-xxxxlarge;
+      font-weight: $font-weight-extra-bold;
       color: $color-accent;
     }
   }

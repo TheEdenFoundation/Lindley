@@ -88,7 +88,7 @@ body {
     }
 
     .timetable-component {
-      flex: 5;
+      flex: 3;
       height: 100%; /* Ensure it takes full height */
 
       /* On mobile/tablet, each section is full screen (100vh) and scrollable */
@@ -98,7 +98,7 @@ body {
     }
 
     .news-component {
-      flex: 6;
+      flex: 7;
       display: block; /* or flex, your choice */
       padding: 10px;
     }

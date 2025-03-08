@@ -12,7 +12,6 @@ const props = defineProps({
     <div v-if="prayers.length" class="timetable">
       <div class="timetable__header">
         <span class="name-column"></span>
-        <span class="time-column">Start</span>
         <span class="time-column">Jamat</span>
       </div>
       <ul class="timetable__list">
@@ -41,7 +40,6 @@ const props = defineProps({
 
           <!-- Otherwise, show both -->
           <template v-else>
-            <span class="time-column">{{ row["Start Time"] }}</span>
             <span class="time-column">{{ row["Jamat Time"] }}</span>
           </template>
         </li>
@@ -103,7 +101,7 @@ const props = defineProps({
         background: #f8f9fa;
         border-radius: $border-radius;
         padding: $padding-small;
-        font-size: $font-size-xxxlarge;
+        font-size: calc($font-size-xxxlarge + 0.5rem);
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {

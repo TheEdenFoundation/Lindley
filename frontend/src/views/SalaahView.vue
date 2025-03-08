@@ -9,7 +9,6 @@ import {
 } from "../utils/salaahUtils.js";
 import { getWeekRange, getTomorrowISO } from "../utils/dateUtils.js";
 import { fetchData } from "../utils/apiUtils.js";
-import { processJummah } from "../utils/prayerUtils.js";
 
 /** MAIN STATES **/
 const weekData = ref([]);
@@ -122,13 +121,7 @@ function buildTodaysData() {
   const todayISO = now.toISOString().split("T")[0];
 
   const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
-  const fridayRecord = weekData.value.find((r) => {
-    const d = new Date(r?.date || "");
-    return d.getDay() === 5;
-  });
-
   const dailyPrayers = processDailyPrayer(todaysRecord);
-  const jummahRow = processJummah(fridayRecord);
 
   const updatedPrayers = dailyPrayers.map((prayer, index) => {
     const timeStr = prayer["Jamat Time (24hr)"] || prayer["Start Time (24hr)"];
@@ -151,10 +144,8 @@ function buildTodaysData() {
   });
 
   finalArray.value = updatedPrayers.filter(
-    (prayer) => prayer.Name !== "Sehri End"
+    (prayer) => prayer.Name !== "Sehri End" && prayer.Name !== "Jummah"
   );
-
-  finalArray.value.push(jummahRow);
 
   findNextAndCurrentPrayer();
 }

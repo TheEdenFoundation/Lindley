@@ -99,7 +99,7 @@ body {
 
     .news-component {
       flex: 7;
-      display: block; /* or flex, your choice */
+      display: block;
       padding: 10px;
     }
 

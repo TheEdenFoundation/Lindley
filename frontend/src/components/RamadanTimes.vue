@@ -140,7 +140,7 @@ onMounted(() => {
   background: $color-success;
   padding: 0.7rem;
   border-radius: 8px;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
 }
 
 .timings {

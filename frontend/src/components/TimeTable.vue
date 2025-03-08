@@ -113,6 +113,10 @@ const props = defineProps({
           font-weight: $font-weight-bold;
           color: $color-accent;
           font-size: calc($font-size-xxxlarge + 0.5rem);
+
+          @media (max-width: $breakpoint-tablet) {
+            font-size: calc($font-size-large + 0.5rem);
+          }
         }
 
         .time-column {
@@ -120,6 +124,10 @@ const props = defineProps({
           color: #4a5568;
           font-weight: $font-weight-extra-bold;
           font-size: calc($font-size-xxxxlarge + 0.5rem);
+
+          @media (max-width: $breakpoint-tablet) {
+            font-size: calc($font-size-large + 0.5rem);
+          }
         }
       }
     }

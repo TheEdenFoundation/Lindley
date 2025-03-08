@@ -149,6 +149,10 @@ onMounted(() => {
   gap: 2rem;
   font-size: $font-size-xxxlarge;
   font-weight: $font-weight-extra-bold;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: calc($font-size-large + 0.5rem);
+  }
 }
 
 .timings p {

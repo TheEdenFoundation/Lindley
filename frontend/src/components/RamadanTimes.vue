@@ -127,8 +127,8 @@ onMounted(() => {
 <template>
   <div class="ramadan-times">
     <div class="timings">
-      <p>{{ sehriLabel }}: {{ sehriEndTime }}</p>
-      <p>{{ iftarLabel }}: {{ iftarTime }}</p>
+      <p class="sehri-label">{{ sehriLabel }}: {{ sehriEndTime }}</p>
+      <p class="iftar-label">{{ iftarLabel }}: {{ iftarTime }}</p>
     </div>
   </div>
 </template>
@@ -141,18 +141,13 @@ onMounted(() => {
   padding: 0.7rem;
   border-radius: 8px;
   margin-top: 1rem;
-
-  h3 {
-    font-size: $font-size-xxlarge;
-    font-weight: $font-weight-normal;
-  }
 }
 
 .timings {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  font-size: $font-size-xxlarge;
+  font-size: $font-size-xxxxlarge;
   font-weight: $font-weight-extra-bold;
 }
 

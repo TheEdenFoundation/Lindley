@@ -141,11 +141,6 @@ onMounted(() => {
   padding: 0.5rem;
   border-radius: 8px;
   margin-top: 1rem;
-
-  h3 {
-    font-size: $font-size-xlarge;
-    font-weight: $font-weight-normal;
-  }
 }
 
 .timings {
@@ -154,6 +149,12 @@ onMounted(() => {
   gap: 2rem;
   font-size: $font-size-xlarge;
   font-weight: $font-weight-extra-bold;
+
+  @media (max-width: $breakpoint-tablet) {
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: calc($font-size-medium + 0.1rem);
+  }
 }
 
 .timings p {

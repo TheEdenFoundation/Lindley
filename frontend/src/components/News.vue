@@ -127,18 +127,6 @@ onMounted(fetchSlideshow);
     }
   }
 
-  @media (max-width: $breakpoint-desktop) {
-    height: 100%;
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    min-height: 400px;
-
-    .news-item {
-      padding: $padding-small 0;
-    }
-  }
-
   .ramadan-news {
     height: 90%;
   }

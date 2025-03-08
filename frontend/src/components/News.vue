@@ -122,19 +122,13 @@ onMounted(fetchSlideshow);
       img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
         border-radius: 8px;
       }
     }
   }
 
   @media (max-width: $breakpoint-desktop) {
-    aspect-ratio: 16/9;
     height: 100%;
-
-    .news-item figure img {
-      object-fit: cover;
-    }
   }
 
   @media (max-width: $breakpoint-mobile) {

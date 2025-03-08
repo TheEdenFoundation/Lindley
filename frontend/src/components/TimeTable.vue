@@ -76,6 +76,10 @@ const props = defineProps({
       text-transform: uppercase;
       margin-bottom: 8px;
 
+      @media (max-width: $breakpoint-tablet) {
+        font-size: calc($font-size-small + 0.1rem);
+      }
+
       .name-column {
         width: 75%;
       }
@@ -103,8 +107,9 @@ const props = defineProps({
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {
-          padding: $padding-small;
+          padding: $padding-small 45px;
           font-size: 1.3rem;
+          margin-bottom: 10px;
         }
 
         .name-column {
@@ -115,7 +120,7 @@ const props = defineProps({
           font-size: calc($font-size-xxxlarge + 0.5rem);
 
           @media (max-width: $breakpoint-tablet) {
-            font-size: calc($font-size-medium + 0.1rem);
+            font-size: calc($font-size-medium + 0.3rem);
           }
         }
 
@@ -126,7 +131,7 @@ const props = defineProps({
           font-size: calc($font-size-xxxxlarge + 0.5rem);
 
           @media (max-width: $breakpoint-tablet) {
-            font-size: calc($font-size-medium + 0.1rem);
+            font-size: calc($font-size-medium + 0.3rem);
           }
         }
       }

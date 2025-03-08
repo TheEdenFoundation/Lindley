@@ -77,11 +77,9 @@ const props = defineProps({
       margin-bottom: 8px;
 
       .name-column {
-        width: 40%;
-        text-align: left;
+        width: 75%;
       }
       .time-column {
-        flex: 1;
         text-align: center;
       }
     }
@@ -98,9 +96,10 @@ const props = defineProps({
       li {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         background: #f8f9fa;
         border-radius: $border-radius;
-        padding: $padding-small;
+        padding: $padding-small 45px;
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {
@@ -118,15 +117,10 @@ const props = defineProps({
         }
 
         .time-column {
-          flex: 1;
           text-align: center;
           color: #4a5568;
           font-weight: $font-weight-extra-bold;
           font-size: calc($font-size-xxxxlarge + 0.5rem);
-
-          &.full-width {
-            flex: 2;
-          }
         }
       }
     }

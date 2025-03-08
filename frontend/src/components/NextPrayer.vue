@@ -10,9 +10,8 @@ const props = defineProps({
 <template>
   <div class="next-prayer">
     <h2 class="next-prayer__title">
-      Next Prayer:
       <span v-if="nextName !== 'No upcoming prayers'">
-        {{ nextName }} <span>in</span> {{ nextCountdown }}
+        {{ nextName }} <span>starts in</span> {{ nextCountdown }}
       </span>
       <span v-else>{{ nextName }}</span>
     </h2>
@@ -32,13 +31,13 @@ const props = defineProps({
   &__title {
     font-size: 2rem;
     color: $color-accent;
-    font-weight: bold;
+    font-weight: normal;
 
     @media (max-width: $breakpoint-tablet) {
       font-size: 1.2rem;
     }
     span {
-      font-weight: normal;
+      font-weight: bold;
     }
   }
 }

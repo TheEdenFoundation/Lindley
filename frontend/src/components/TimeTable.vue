@@ -110,7 +110,6 @@ const props = defineProps({
         .name-column {
           width: 40%;
           text-align: left;
-          padding: 0 12px;
           font-weight: $font-weight-bold;
           color: $color-accent;
           font-size: calc($font-size-xxxlarge + 0.5rem);

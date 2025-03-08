@@ -115,7 +115,7 @@ const props = defineProps({
           font-size: calc($font-size-xxxlarge + 0.5rem);
 
           @media (max-width: $breakpoint-tablet) {
-            font-size: calc($font-size-large + 0.5rem);
+            font-size: calc($font-size-medium + 0.1rem);
           }
         }
 
@@ -126,7 +126,7 @@ const props = defineProps({
           font-size: calc($font-size-xxxxlarge + 0.5rem);
 
           @media (max-width: $breakpoint-tablet) {
-            font-size: calc($font-size-large + 0.5rem);
+            font-size: calc($font-size-medium + 0.1rem);
           }
         }
       }

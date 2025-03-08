@@ -151,7 +151,9 @@ onMounted(() => {
   font-weight: $font-weight-extra-bold;
 
   @media (max-width: $breakpoint-tablet) {
-    font-size: calc($font-size-large + 0.5rem);
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: calc($font-size-medium + 0.1rem);
   }
 }
 

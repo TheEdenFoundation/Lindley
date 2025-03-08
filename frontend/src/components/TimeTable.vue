@@ -79,10 +79,13 @@ const props = defineProps({
       .name-column {
         width: 40%;
         text-align: left;
+        padding: 0 12px;
+        font-size: calc($font-size-xxxlarge + 0.5rem);
       }
       .time-column {
         flex: 1;
         text-align: center;
+        font-size: calc($font-size-xxxxlarge + 0.75rem);
       }
     }
 
@@ -101,17 +104,11 @@ const props = defineProps({
         background: #f8f9fa;
         border-radius: $border-radius;
         padding: $padding-small;
-        font-size: calc($font-size-xxxlarge + 0.5rem);
         transition: background-color 0.2s ease;
 
         @media (max-width: $breakpoint-tablet) {
           padding: $padding-small;
           font-size: 1.3rem;
-        }
-
-        &.jummah {
-          background: $color-jummah-bg;
-          color: $color-jummah-text;
         }
 
         .name-column {

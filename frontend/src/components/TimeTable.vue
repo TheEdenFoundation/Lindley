@@ -71,7 +71,7 @@ const props = defineProps({
       display: flex;
       padding: 12px 16px;
       color: $color-secondary;
-      font-size: $font-size-medium;
+      font-size: $font-size-large;
       font-weight: $font-weight-bold;
       text-transform: uppercase;
       margin-bottom: 8px;
@@ -79,13 +79,10 @@ const props = defineProps({
       .name-column {
         width: 40%;
         text-align: left;
-        padding: 0 12px;
-        font-size: calc($font-size-xxxlarge + 0.5rem);
       }
       .time-column {
         flex: 1;
         text-align: center;
-        font-size: calc($font-size-xxxxlarge + 0.75rem);
       }
     }
 
@@ -113,8 +110,11 @@ const props = defineProps({
 
         .name-column {
           width: 40%;
+          text-align: left;
+          padding: 0 12px;
           font-weight: $font-weight-bold;
           color: $color-accent;
+          font-size: calc($font-size-xxxlarge + 0.5rem);
         }
 
         .time-column {
@@ -122,6 +122,7 @@ const props = defineProps({
           text-align: center;
           color: #4a5568;
           font-weight: $font-weight-extra-bold;
+          font-size: calc($font-size-xxxxlarge + 0.5rem);
 
           &.full-width {
             flex: 2;

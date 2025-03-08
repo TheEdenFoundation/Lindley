@@ -143,7 +143,7 @@ onMounted(() => {
   margin-top: 1rem;
 
   h3 {
-    font-size: $font-size-xlarge;
+    font-size: $font-size-xxlarge;
     font-weight: $font-weight-normal;
   }
 }
@@ -152,7 +152,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  font-size: $font-size-xlarge;
+  font-size: $font-size-xxlarge;
   font-weight: $font-weight-extra-bold;
 }
 

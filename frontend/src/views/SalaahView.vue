@@ -10,16 +10,15 @@ import {
 import { getWeekRange, getTomorrowISO } from "../utils/dateUtils.js";
 import { fetchData } from "../utils/apiUtils.js";
 import { processJummah } from "../utils/prayerUtils.js";
+import { usePrayerTimesStore } from "../stores/prayerTimes";
 
 /** MAIN STATES **/
-const weekData = ref([]);
 const finalArray = ref([]);
-const tomorrowData = ref([]);
 const nextPrayerName = ref("");
 const nextPrayerCountdown = ref("");
 const currentPrayerName = ref("");
-const loading = ref(true);
-const error = ref(null);
+
+const store = usePrayerTimesStore();
 
 /** INTERVAL / TIMEOUT HANDLES **/
 let updateInterval = null;
@@ -27,49 +26,13 @@ let midnightTimeout = null;
 
 /** 1) FETCH current Sunday–Saturday from Strapi */
 async function fetchWeekData() {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    const { startISO, endISO } = getWeekRange();
-    const queryParams = new URLSearchParams({
-      "filters[date][$gte]": startISO,
-      "filters[date][$lte]": endISO,
-      populate: "*",
-    });
-    const url = `${
-      import.meta.env.VITE_STRAPI_URL
-    }/api/salaah-times?${queryParams}`;
-    const data = await fetchData(url, import.meta.env.VITE_STRAPI_API_TOKEN);
-    weekData.value = data.data || [];
-    buildTodaysData();
-  } catch (err) {
-    error.value = err.message;
-    console.error("Error fetching week data:", err);
-  } finally {
-    loading.value = false;
-  }
+  await store.fetchWeekData();
+  buildTodaysData();
 }
 
 /** 3) Always fetch tomorrow's date from Strapi */
 async function fetchTomorrowData() {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    const tomorrowISO = getTomorrowISO();
-    const url = `${
-      import.meta.env.VITE_STRAPI_URL
-    }/api/salaah-times?filters[date][$eq]=${tomorrowISO}&populate=*`;
-    const data = await fetchData(url, import.meta.env.VITE_STRAPI_API_TOKEN);
-    tomorrowData.value = processTomorrowsPrayer(data.data?.[0]);
-  } catch (err) {
-    tomorrowData.value = [];
-    error.value = err.message;
-    console.error("Error fetching tomorrow data:", err);
-  } finally {
-    loading.value = false;
-  }
+  await store.fetchTomorrowData();
 }
 
 /**
@@ -121,8 +84,8 @@ function buildTodaysData() {
     now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   const todayISO = now.toISOString().split("T")[0];
 
-  const todaysRecord = weekData.value.find((r) => r?.date === todayISO);
-  const fridayRecord = weekData.value.find((r) => {
+  const todaysRecord = store.weekData.find((r) => r?.date === todayISO);
+  const fridayRecord = store.weekData.find((r) => {
     const d = new Date(r?.date || "");
     return d.getDay() === 5;
   });
@@ -130,7 +93,19 @@ function buildTodaysData() {
   const dailyPrayers = processDailyPrayer(todaysRecord);
   const jummahRow = processJummah(fridayRecord);
 
+  // Store the original prayers first
+  const originalPrayers = [...dailyPrayers];
+  store.setTodayData(
+    [...originalPrayers, jummahRow], // original data
+    [] // updated data (will be set below)
+  );
+
   const updatedPrayers = dailyPrayers.map((prayer, index) => {
+    // Don't update Sehri End time to tomorrow's time
+    if (prayer.Name === "Sehri End") {
+      return prayer;
+    }
+
     const timeStr = prayer["Jamat Time (24hr)"] || prayer["Start Time (24hr)"];
     if (!timeStr) {
       return prayer;
@@ -142,19 +117,24 @@ function buildTodaysData() {
 
     // Check if the prayer has passed
     if (prayerSec + 300 < currentSec) {
-      if (tomorrowData.value[index]) {
-        return tomorrowData.value[index];
+      if (store.tomorrowData[index]) {
+        return store.tomorrowData[index];
       }
     }
 
     return prayer;
   });
 
-  finalArray.value = updatedPrayers.filter(
-    (prayer) => prayer.Name !== "Sehri End"
+  // Update the store with both original and updated data
+  store.setTodayData(
+    [...originalPrayers, jummahRow],
+    [...updatedPrayers, jummahRow]
   );
 
-  finalArray.value.push(jummahRow);
+  // Filter out Sehri End for display
+  finalArray.value = updatedPrayers
+    .filter((prayer) => prayer.Name !== "Sehri End")
+    .concat(jummahRow);
 
   findNextAndCurrentPrayer();
 }
@@ -200,11 +180,11 @@ onUnmounted(() => {
     <TimeTable
       :prayers="finalArray"
       :activeName="currentPrayerName"
-      :tomorrowData="tomorrowData"
+      :tomorrowData="store.tomorrowData"
     />
 
-    <div v-if="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="store.loading">Loading...</div>
+    <div v-if="store.error" class="error">{{ store.error }}</div>
   </section>
 </template>
 

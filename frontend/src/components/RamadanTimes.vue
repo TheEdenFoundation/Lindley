@@ -1,12 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import moment from "moment-hijri";
-import {
-  processDailyPrayer,
-  processTomorrowsPrayer,
-} from "../utils/salaahUtils.js";
-import { fetchData } from "../utils/apiUtils.js";
+import { usePrayerTimesStore } from "../stores/prayerTimes";
 
+const store = usePrayerTimesStore();
 const sehriEndTime = ref("");
 const iftarTime = ref("");
 const sehriLabel = ref("Sehri End Today");
@@ -22,82 +19,70 @@ const convertTo12Hour = (time24) => {
   return `${hours12}:${minutes.toString().padStart(2, "0")} ${period}`;
 };
 
-const fetchRamadanTimes = async (forTomorrow = false) => {
-  const date = forTomorrow
-    ? moment().add(1, "day").format("YYYY-MM-DD")
-    : moment().format("YYYY-MM-DD");
+const updateTimesFromStore = (type = "both", forTomorrow = false) => {
+  const prayers = forTomorrow ? store.tomorrowData : store.originalTodayData;
 
-  const queryParams = new URLSearchParams({
-    "filters[date][$eq]": date,
-    populate: "*",
-  });
-  const url = `${
-    import.meta.env.VITE_STRAPI_URL
-  }/api/salaah-times?${queryParams}`;
-
-  try {
-    const data = await fetchData(url, import.meta.env.VITE_STRAPI_API_TOKEN);
-    const record = data.data.find((rec) => rec.date === date);
-    if (record) {
-      const prayers = forTomorrow
-        ? processTomorrowsPrayer(record)
-        : processDailyPrayer(record);
-      const sehriPrayer = prayers.find((prayer) =>
-        prayer.Name.includes("Sehri End")
-      );
-      const iftarPrayer = prayers.find((prayer) =>
-        prayer.Name.includes("Maghrib")
-      );
-
-      sehriEndTime.value = convertTo12Hour(
-        sehriPrayer?.["Start Time (24hr)"] || ""
-      );
-      iftarTime.value = convertTo12Hour(
-        iftarPrayer?.["Jamat Time (24hr)"] || ""
-      );
-
-      sehriLabel.value = forTomorrow ? "Sehri End Tomorrow" : "Sehri End Today";
-      iftarLabel.value = forTomorrow ? "Iftar Tomorrow" : "Iftar Today";
-
-      // Force a check to see if we need to switch to tomorrow
-      if (!forTomorrow) {
-        updateRamadanTimes();
-      }
-    } else {
-      console.warn(`No data found for ${forTomorrow ? "tomorrow" : "today"}.`);
-    }
-  } catch (error) {
-    console.error(
-      `Error fetching ${forTomorrow ? "tomorrow's" : "today's"} Ramadan times:`,
-      error
+  if (type === "both" || type === "sehri") {
+    const sehriPrayer = prayers.find((prayer) =>
+      prayer.Name.includes("Sehri End")
     );
+    sehriEndTime.value = convertTo12Hour(
+      sehriPrayer?.["Start Time (24hr)"] || ""
+    );
+    sehriLabel.value = forTomorrow ? "Sehri End Tomorrow" : "Sehri End Today";
+  }
+
+  if (type === "both" || type === "iftar") {
+    const iftarPrayer = prayers.find((prayer) =>
+      prayer.Name.includes("Maghrib")
+    );
+    iftarTime.value = convertTo12Hour(iftarPrayer?.["Jamat Time (24hr)"] || "");
+    iftarLabel.value = forTomorrow ? "Iftar Tomorrow" : "Iftar Today";
   }
 };
 
 const updateRamadanTimes = () => {
   const now = new Date();
-  if (!iftarTime.value) {
-    fetchRamadanTimes();
-    return;
-  }
-  const match = iftarTime.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  if (!match) {
-    console.error("Invalid Iftar time format:", iftarTime.value);
+  if (!iftarTime.value || !sehriEndTime.value) {
+    if (store.originalTodayData.length > 0) {
+      updateTimesFromStore("both", false);
+    }
     return;
   }
 
-  let [hours, minutes, period] = match.slice(1);
-  hours = parseInt(hours, 10);
-  minutes = parseInt(minutes, 10);
-  if (period.toUpperCase() === "PM" && hours < 12) hours += 12;
-  if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
+  // Check Sehri time
+  const sehriMatch = sehriEndTime.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (sehriMatch) {
+    let [sHours, sMinutes, sPeriod] = sehriMatch.slice(1);
+    sHours = parseInt(sHours, 10);
+    sMinutes = parseInt(sMinutes, 10);
+    if (sPeriod.toUpperCase() === "PM" && sHours < 12) sHours += 12;
+    if (sPeriod.toUpperCase() === "AM" && sHours === 12) sHours = 0;
 
-  const maghribTime = new Date();
-  maghribTime.setHours(hours, minutes, 0, 0);
+    const sehriTime = new Date();
+    sehriTime.setHours(sHours, sMinutes, 0, 0);
 
-  if (now >= maghribTime && !isUpdatedToTomorrow) {
-    isUpdatedToTomorrow = true;
-    fetchRamadanTimes(true);
+    if (now >= sehriTime) {
+      updateTimesFromStore("sehri", true);
+    }
+  }
+
+  // Check Maghrib time
+  const maghribMatch = iftarTime.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (maghribMatch) {
+    let [mHours, mMinutes, mPeriod] = maghribMatch.slice(1);
+    mHours = parseInt(mHours, 10);
+    mMinutes = parseInt(mMinutes, 10);
+    if (mPeriod.toUpperCase() === "PM" && mHours < 12) mHours += 12;
+    if (mPeriod.toUpperCase() === "AM" && mHours === 12) mHours = 0;
+
+    const maghribTime = new Date();
+    maghribTime.setHours(mHours, mMinutes, 0, 0);
+
+    if (now >= maghribTime && !isUpdatedToTomorrow) {
+      isUpdatedToTomorrow = true;
+      updateTimesFromStore("iftar", true);
+    }
   }
 };
 
@@ -105,15 +90,34 @@ const resetUpdateFlag = () => {
   const now = new Date();
   if (now.getHours() === 0 && now.getMinutes() === 0) {
     isUpdatedToTomorrow = false;
-    fetchRamadanTimes().then(() => {
-      sehriLabel.value = "Sehri End Today";
-      iftarLabel.value = "Iftar Today";
-    });
+    updateTimesFromStore("both", false);
   }
 };
 
+watch(
+  () => store.originalTodayData,
+  (newData) => {
+    if (newData.length > 0) {
+      updateTimesFromStore("both", false);
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  () => store.tomorrowData,
+  (newData) => {
+    if (newData.length > 0 && isUpdatedToTomorrow) {
+      updateTimesFromStore("both", true);
+    }
+  },
+  { deep: true }
+);
+
 onMounted(() => {
-  fetchRamadanTimes();
+  if (store.originalTodayData.length > 0) {
+    updateTimesFromStore("both", false);
+  }
   updateRamadanTimes(); // Check immediately if Maghrib has passed
   const interval = setInterval(updateRamadanTimes, 1000);
   const resetInterval = setInterval(resetUpdateFlag, 1000);

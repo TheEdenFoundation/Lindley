@@ -37,9 +37,6 @@ const props = defineProps({
     @media (max-width: $breakpoint-tablet) {
       font-size: 1.2rem;
     }
-    span {
-      font-weight: normal;
-    }
   }
 }
 </style>

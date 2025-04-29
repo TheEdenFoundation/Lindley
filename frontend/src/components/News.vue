@@ -91,7 +91,7 @@ onMounted(fetchSlideshow);
     <div v-else :class="{ 'ramadan-news': isRamadan }" class="skeleton-news">
       <div class="skeleton-image"></div>
     </div>
-    <RamadanTimes />
+    <RamadanTimes v-if="isRamadan" />
   </div>
 </template>
 
